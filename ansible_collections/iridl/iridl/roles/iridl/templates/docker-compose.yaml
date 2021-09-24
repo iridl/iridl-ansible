@@ -1,0 +1,93 @@
+version: "3.2"
+services:
+  squid:
+    image: iridl/dlsquid:{{dlsquid_version}}
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 3128
+    restart: always
+    # stop_grace_period must be longer than squid's shutdown_lifetime,
+    # which defaults to 30s. If docker gets impatient and sends
+    # SIGKILL, squid exits without cleaning up its pid file, and
+    # potentially corrupts its cache.
+    #
+    # Note: this takes effect when we run docker-compose from the
+    # command line, or when the docker daemon gets shut down, but not
+    # when we use ansible to stop or restart the service. In the
+    # latter case, ansible overrides this timeout, so we have to
+    # specify it redundantly in the "restart squid" handler.
+    stop_grace_period: "{{squid_shutdown_lifetime + 10}}s"
+    volumes:
+      - "{{squid_config_dir}}:/usr/local/etc/squid:rslave,ro"
+
+      - type: volume
+        source: squid-cache
+        target: /var/cache/squid
+        read_only: false
+      - type: volume
+        source: squid-log
+        target: /var/log/squid
+        read_only: false
+
+  maproom:
+    image: iridl/maproom-base:{{maproom_base_version}}
+    expose:
+      - 8000
+    restart: always
+    volumes:
+      - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
+
+  postgres:
+    image: iridl/ingriddb:{{ingriddb_version}}
+    expose:
+      - 5432
+    command: "run {{ingrid_postgres_password}}"
+    volumes:
+      - "{{sql_dir}}:/sql:rslave,ro"
+      - type: volume
+        source: ingriddb
+        target: "/var/lib/pgsql/9.1"
+        read_only: false
+    restart: always
+
+
+  ingrid:
+    image: iridl/ingrid:{{ingrid_version}}
+    expose:
+      - 80
+    restart: always
+    environment:
+      INGRID_POSTGRES_PASSWORD: "{{ingrid_postgres_password}}"
+      http_proxy: http://squid:3128
+    volumes:
+      - "{{ingrid_config_dir}}/localdefs.tex:/opt/ingrid/localdefs.tex:rslave,ro"
+      - "{{data_dir}}:{{data_dir}}:rslave,ro" # path in container must match path used in catalog entries
+      - "{{dlentries_dir}}:/dlentries:rslave,ro" # path in container must match dockerized ingrid's config.lua
+
+      - type: volume
+        source: ingrid-tmp
+        target: "/ingrid-tmp" # must match dockerized ingrid's config.lua
+        read_only: false
+
+      - type: volume
+        source: ingrid-cache
+        target: "{{ingrid_cache_target}}" # must match ingrid-localdefs.tex in this repo.
+        read_only: false
+
+volumes:
+  ingriddb:
+  ingrid-tmp:
+  ingrid-cache:
+  squid-cache:
+  squid-log:
+
+networks:
+  default:
+    ipam:
+      config:
+        # docker can assign a network block automatically, but
+        # specifying it explicitly allows us to whitelist it in the
+        # squid config.
+        - subnet: "{{docker_virtual_network}}"

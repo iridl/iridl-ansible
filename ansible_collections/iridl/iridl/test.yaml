@@ -1,0 +1,5 @@
+- hosts: dlservers
+  vars_files:
+    - test-secrets.yaml
+  roles:
+    - iridl

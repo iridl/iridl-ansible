@@ -1,0 +1,23 @@
+dldir: /usr/local/datalib
+compose_project_name: datalib
+docker_virtual_network: 172.18.0.0/24
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+# URL of a pull-through image registry cache. Setting this is useful
+# when testing the ansible role, to avoid re-downloading the same
+# images again and again. In a production configuration this is
+# usually left blank.
+docker_registry_mirror:
+
+# At a site with low internet bandwidth, reduce this to 1.
+docker_max_concurrent_downloads: 3
+
+# Override this on the command line with -e if you want to run the
+# script that updates dlentries and maprooms repos. We generally use
+# -e run_update_script when first installing the software, but not
+# when updating the configuration of an existing installation.
+run_update_script: no

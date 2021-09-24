@@ -1,0 +1,75 @@
+all:
+  children:
+    dlservers:
+      vars:
+        country: testcountry
+
+        # We disable host key checking in our Vagrant test environment
+        # because the host key changes each time we destroy and
+        # recreate the VM. In a production environment it should be
+        # enabled.
+        ansible_ssh_common_args: -o StrictHostKeyChecking=no
+
+        ansible_ssh_private_key_file: "{{lookup('env', 'HOME')}}/.vagrant.d/insecure_private_key"
+        ansible_user: vagrant
+        ansible_become: true
+
+        # ansible_pipelining speeds things up, but according to the
+        # docs it conflicts with some uses of become. Everything is
+        # working ok so far; if it causes problems in the future, try
+        # disabling it for individual tasks that are problematic.
+        ansible_pipelining: true
+
+        # Path of the directory where datasets are stored. This is
+        # typically a volume with multiple TB of space, and ideally
+        # not the root volume.
+        data_dir: "/data1/datalib/data"
+
+        # Path of the directory where the docker daemon's data will
+        # go, including volumes and container images. This can take up
+        # tens of GB, so it's best not to put it on the root
+        # volume. We typically put it on the same volume as data_dir
+        # (see above).
+        docker_dir: "/data1/docker"
+
+        # See defaults/main.yaml
+        docker_registry_mirror: http://10.0.2.2:5000
+
+        dl_hostname: localhost:8082
+        squid_test_hostport: localhost:8082
+
+        # SMTP relay host:port in postfix format,
+        # e.g. [mail-relay.iri.columbia.edu]:25
+        mail_relay:
+
+        # Email address that users of your Data Library should write
+        # to for help
+        support_email:  
+
+        # Email address to which automated messages about system
+        # status will be sent
+        admin_emails: []
+
+        # Replace with the URLs of your country-specific dlentries and
+        # maproom repositories. Here we are using anonymous access
+        # over HTTPS, but if your repositories require authentication,
+        # configure the access key in the secrets file and specify the
+        # repositories like this:
+        #
+        #    dlentries_repo: git@bitbucket.org:iridl/dlentries_mycountry.git
+        #    maproom_repo: git@bitbucket.org:iridl/maproom_mycountry.git
+        dlentries_repo: https://bitbucket.org/iridl/dlentries_testcountry.git
+        maproom_repo: https://bitbucket.org/iridl/maproom_testcountry.git
+
+        dlentries_version: master
+        maproom_version: master
+        ingrid_version: d250324
+        ingriddb_version: 1322790
+        maproom_base_version: 267900f
+        maproom_dev_version: 267900f
+        dlsquid_version: e16cb8b
+
+      hosts:
+        dlserver1:
+          ansible_host: 127.0.0.1
+          ansible_port: 2225 # must match setting in Vagrantfile (TODO Vagrantfile)

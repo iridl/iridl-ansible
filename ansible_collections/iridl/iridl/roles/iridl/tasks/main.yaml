@@ -1,0 +1,445 @@
+#
+# General system settings
+#
+- name: disable selinux
+  selinux:
+    state: disabled
+
+- name: enable EPEL yum repo
+  yum:
+    name: epel-release
+
+- name: yum
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - screen
+      - tmux
+      - htop
+      - iotop
+      - netcdf
+
+- name: mail relay config
+  template:
+    src: postfix/main.cf
+    dest: /etc/postfix/main.cf
+  notify: reload postfix
+
+- name: mail aliases
+  template:
+    src: postfix/aliases
+    dest: /etc/aliases
+  register: newalias
+
+- name: newaliases
+  shell: /usr/bin/newaliases
+  when: newalias.changed
+
+- name: chrony.conf
+  template:
+    src: chrony.conf
+    dest: /etc/chrony.conf
+  notify:
+    restart chronyd
+
+- name: chrony service
+  service:
+    name: chronyd
+    state: started
+    enabled: true
+
+
+#
+# Permission structures to allow selected users to manage data
+#
+- name: user datag
+  user:
+    name: datag
+    uid: "{{datag_uid}}"
+
+- name: allow members of datag group to sudo -u datag so they can install data files
+  copy:
+    content: |
+      %datag ALL=(datag) NOPASSWD: ALL
+    dest: /etc/sudoers.d/become_datag
+    mode: 0400
+
+- name: Set UID range for human users
+  lineinfile:
+    path: /etc/login.defs
+    regexp: "^UID_MAX"
+    line: UID_MAX 1099 # reduce from default of 60000, which overlaps with our system users
+
+- name: Set GID range for human users
+  lineinfile:
+    path: /etc/login.defs
+    regexp: "^GID_MAX"
+    line: GID_MAX 1099 # reduce from default of 60000, which overlaps with our system users
+
+- name: data dir
+  file:
+    path: "{{data_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+
+- name: datalib dir
+  file:
+    path: "{{dldir}}"
+    state: directory
+
+- name: datalib etc dir
+  file:
+    path: "{{dldir}}/etc"
+    state: directory
+
+
+
+#
+# Docker and docker-compose
+#
+- set_fact:
+    docker_ansible_venv: "{{dldir}}/ansible-docker-compose-venv"
+
+- name: docker dir
+  file:
+    state: directory
+    path: "{{docker_dir}}"
+    mode: "u=rwx,g=x,o=x"
+
+- name: docker dir symlink
+  file:
+    state: link
+    src: "{{docker_dir}}"
+    dest: /var/lib/docker
+  when: docker_dir != "/var/lib/docker"
+
+- name: install docker, docker-compose
+  yum:
+    name: "{{packages}}"
+  vars:
+    packages:
+      - docker
+      - docker-compose
+
+- name: docker config file
+  copy:
+    dest: /etc/docker/daemon.json
+    content: >
+      {
+        "registry-mirrors": ["{{docker_registry_mirror}}"],
+        "insecure-registries": ["{{docker_registry_mirror}}"],
+        "max-concurrent-downloads": {{docker_max_concurrent_downloads | int}}
+      }
+
+  notify: restart docker
+
+- name: start and enable docker
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+# Install the python docker and docker_compose modules in a virtualenv
+# so that ansible can use them.
+
+- name: install virtualenv tool
+  yum:
+    name: python-virtualenv
+
+- name: virtualenv for docker ansible modules
+  pip:
+    virtualenv: "{{docker_ansible_venv}}"
+    name:
+      - docker-compose==1.24.1
+    # Inherit the system python's site-packages. This is bad for
+    # environment isolation, but it's the only way to get the RPM
+    # python bindings into a virtualenv, since they haven't been
+    # published as a pip-installable package.
+    virtualenv_site_packages: yes
+
+- name: docker login
+  docker_login:
+    username: iridlserver
+    password: "{{docker_hub_access_token}}"
+  vars:
+    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+  # Intentionally not logging out. The (read-only) access token is
+  # stored unencrypted on the server, and we're ok with that.
+
+- name: maproom-dev image
+  docker_image:
+    name: iridl/maproom-dev:{{maproom_dev_version}}
+    source: pull
+  vars:
+    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+
+
+#
+# squid
+#
+- name: squid log rotation cron job
+  cron:
+    name: squid log rotation
+    user: root
+    minute: "0"
+    hour: "0"
+    job: docker exec {{compose_project_name}}_squid_1 squid -k rotate
+
+- set_fact:
+    squid_config_dir: "{{dldir}}/etc/squid"
+    squid_shutdown_lifetime: 30
+
+- name: squid group
+  group:
+    name: squid
+    gid: 23 # the UID/GID used by the CentOS squid packages
+
+- name: squid user
+  user:
+    name: squid
+    uid: 23
+    shell: /sbin/nologin
+    create_home: no
+
+- name: squid config directory
+  file:
+    path: "{{squid_config_dir}}"
+    state: directory
+
+- name: squid.conf
+  template:
+    src: squid.conf
+    dest: "{{squid_config_dir}}/squid.conf"
+  vars:
+    dl_hostname_regex: "{{ dl_hostname | replace('.', '\\.') }}"
+  notify: reconfigure squid
+
+
+#
+# git and access to git repos
+#
+- name: install git
+  yum:
+    name: git
+
+- name: /root/.ssh
+  # Necessary when using sudo, as in vagrant. Works around a bug in
+  # the known_hosts module, which ought to create the directory if it
+  # doesn't exist.
+  file:
+    path: /root/.ssh
+    state: directory
+    mode: 0700
+
+# TODO: eliminate specific dependence on bitbucket
+
+- name: add bitbucket host key to ssh_known_hosts
+  known_hosts:
+    name: bitbucket.org
+    # This is a public key, not a secret, so no need to encrypt it.
+    key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+
+
+- name: ssh access key directory
+  # let's keep all data library files together
+  file:
+    path: "{{dldir}}/ssh"
+    state: directory
+    mode: 0700
+
+- set_fact:
+    bitbucket_key_file: "{{dldir}}/ssh/id_rsa-bitbucket"
+
+- name: bitbucket ssh key
+  copy:
+    dest: "{{bitbucket_key_file}}"
+    content: "{{bitbucket_key}}"
+    mode: 0600
+  # If the repo is public then no key is required. 
+  when: bitbucket_key is defined
+
+- name: ssh command for bitbucket
+  copy:
+    dest: "/usr/local/bin/ssh-bitbucket"
+    mode: 0744
+    content: |
+      #!/bin/sh
+      ssh -i {{bitbucket_key_file}} -o IdentitiesOnly=yes "$@"
+
+
+#
+# Scripts for managing data
+#
+- set_fact:
+    update_script: /usr/local/bin/update_datalib
+
+- name: update script
+  template:
+    dest: "{{update_script}}"
+    mode: 0744
+    src: "update_datalib"
+
+- name: datag sudoers config
+  copy:
+    content: |
+      %datag ALL=(root) NOPASSWD: {{update_script}}
+    dest: /etc/sudoers.d/datag_update
+    mode: 0400
+
+- name: run update script
+  command: "bash -x {{update_script}} --notty"
+  when: run_update_script | bool
+
+- name: sql import dir
+  file:
+    path: "{{sql_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+
+- name: sql import script
+  copy:
+    content: |
+      #!/usr/bin/bash -l
+
+      docker exec -it {{compose_project_name}}_postgres_1 /usr/local/bin/entrypoint.sh execsql iridb
+    dest: /usr/local/bin/sql_exec
+    mode: 0744
+
+- name: sql command script
+  copy:
+    content: |
+      #!/usr/bin/bash -l
+
+      docker exec -it {{compose_project_name}}_postgres_1 psql -U postgres iridb
+    dest: /usr/local/bin/sql_interactive
+    mode: 0744
+
+- name: sql sudoers config
+  copy:
+    content: |
+      %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_exec
+      %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_interactive
+    dest: /etc/sudoers.d/datag_sql
+    mode: 0400
+
+
+#
+# ingrid
+#
+- name: ingrid config directory
+  file:
+    path: "{{ingrid_config_dir}}"
+    state: directory
+
+- name: install ingrid localdefs.tex
+  template:
+    src: ingrid-localdefs.tex
+    dest: "{{ingrid_config_dir}}/localdefs.tex"
+  notify: restart ingrid
+
+- name: ingrid cleantmp cron job
+  cron:
+    name: cleantmp
+    user: root
+    minute: "2,7,12,17,22,27,32,37,42,47,52,57"
+    job: docker exec -u {{ingrid_uid}} {{compose_project_name}}_ingrid_1 /opt/ingrid/bin/cleantmp.pl {{ admin_emails | join(" ")}}
+
+- name: ingrid scanproc cron job
+  cron:
+    name: scanproc
+    user: root
+    minute: "*/15"
+    job: "docker exec {{compose_project_name}}_ingrid_1 /opt/ingrid/bin/scanproc.pl /dev/null 2>&1"
+
+
+
+#
+# put it all together with docker-compose
+#
+- name: docker-compose project dir
+  file:
+    path: "{{compose_project_dir}}"
+    state: directory
+    
+- name: docker-compose.yaml
+  template:
+    src: docker-compose.yaml
+    dest: "{{compose_project_dir}}/docker-compose.yaml"
+
+- name: update docker-compose state
+  docker_compose:
+    project_src: "{{compose_project_dir}}"
+    pull: yes
+    remove_orphans: yes
+    debug: yes # to get info on what changed (module doesn't support --diff)
+    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
+  vars:
+    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+  register: docker_compose_result
+
+- debug:
+    msg: "{{docker_compose_result.actions}}"
+
+# TODO need smarter criteria for pruning old images; this prunes the
+# latest maproom-dev, which then gets re-downloaded on every maproom
+# build.
+# - name: remove unused docker images
+#   docker_prune:
+#     images: yes
+#     images_filters:
+#       dangling: false
+#   vars:
+#     ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+
+
+#
+# Flush handlers, then run tests.
+#
+# TODO: Ansible gets service restarts wrong. If a playbook crashes
+# after a notify but before running the handler, then the handler
+# doesn't get triggered on the next run. Stop using handlers and do it
+# right: touch a file when the service needs to be restarted, add a
+# task that checks for that file and, if it exists, restarts the
+# service and then removes the file.
+
+- meta: flush_handlers
+
+- name: verify that chronyd has synchronized with a time server
+  shell: chronyc sources | grep '^\^\*'
+  register: chronyc_result
+  retries: 6
+  until: chronyc_result is success
+  delay: 10
+  changed_when: no
+  check_mode: no # run even in check mode
+
+- name: service tests
+  uri:
+    url: http://{{squid_test_hostport | default(ansible_nodename)}}{{item}}
+    headers:
+      Cache-Control: no-cache # force squid to talk to the backend
+  retries: 5
+  delay: 1
+  register: uri_result
+  until: uri_result is success
+  delegate_to: localhost
+  become: false
+  with_items:
+    - /
+    - /expert  # ingrid
+    - /SOURCES/ # verify data volume is mounted
+    - /maproom/
+  changed_when: no
+  check_mode: no # run even in check mode
+
+# TODO this ought to pass but currently doesn't, indicating that we
+# haven't configured the proxy correctly.
+# - name: test outbound proxy
+#   command: docker exec {{compose_project_name}}_ingrid_1 curl -sI google.com
+#   register: squid_test
+#   changed_when: no
+#   check_mode: no
+#   failed_when: "'HTTP/1.1 301 Moved Permanently' not in squid_test.stdout_lines"

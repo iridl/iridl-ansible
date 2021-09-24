@@ -1,0 +1,229 @@
+\documentclass{article}
+
+\begin{document}
+redirectport is the optional specification of the port to redirect to.
+The default value is the port the server is running on.
+
+In this case, if the port is less than 80, I redirect to 80, otherwise
+I use it (so my experimental version can run on high ports and
+redirect to themselves, the production version redirects to the cache).
+\begin{ingrid}
+%/bindhost (localhost) def
+/redirectport {
+WWWinfo /port known
+{WWWinfo .port dup 85 lt { pop 80} if}
+{80} ifelse
+} def
+/donttrust true  def
+\end{ingrid}
+standardTrailer is the bottom of most of the html pages.  It should
+point to the local sites homepage, the Data Library index, somebody to
+mail to, cute little icons to make your site state-of-the-art, etc.
+Alternatively this can be done in standardHeader.  standardHeader
+should at least include the <body> tag, standardTrailer the </body> tag.
+\begin{ingrid}
+/standardHeader: {(<head>\n) print} def
+/:standardHeader {
+(<link rel="stylesheet" type="text/css" href="/site.css" />\n)print
+portaldlscript
+maybeGoogleAnalyticsHead
+(</head>\n) print
+standardHeader
+} def
+/standardHeader {
+(<body bgcolor="white" link="#990000" vlink="#CC3333" alink="#FF0000")print
+WWWinfo /onload getknown { ( onload=")print print (")print} if
+WWWinfo /onunload getknown { ( onunload=")print print (")print} if
+(>\n) print
+(<div class="toc">\n)print
+(<div class="menuitem"><a href="http://iri.columbia.edu/" class="menu" OnMouseOver="self.status='International Research Institute for Climate and Society';return true"><img src="/icons/IRIicon-80x80.gif" border="0" width="80" height="80" /></a></div>)print
+(\n<div class="menuitem"><hr width="90%" /><a class="linkr1" href="/" OnMouseOver="self.status='Climate Data Library';return true">Data Library</a><hr width="30%" /></div>\n)print
+(<div class="menuitem"><a class="linkr" href="/docfind/")print
+( OnMouseOver="self.status='Finding Data';return true">Finding Data</a></div>\n)
+print
+(<div class="menuitem"><a class="linkr" href="/dochelp/Tutorial/")print
+( OnMouseOver="self.status='Tutorial';return true">Tutorial</a></div>\n)print
+(<div class="menuitem"><a class="linkr" href="/dochelp/QA/")print
+( OnMouseOver="self.status='Climate Data Library Questions and Answers';return true">Questions and Answers</a></div>\n)
+print
+(<div class="menuitem"><a class="linkr" href=") print
+functionsdocurl
+(")print
+( OnMouseOver="self.status='Climate Data Library Functions;return true">Function Documentation</a></div>\n)
+print
+currentobject totype /datasettype eq
+currentobject totype /streamtype eq  or
+WWWinfo .url dup length 1 sub get 47 ne and
+{ WWWinfo .currenturldir
+(<div class="menuitem"><hr width="90%" /><a class="menu" href=")print
+urlprint
+(/" OnMouseOver="self.status='access and manipulate the data';return true"><span class="linkr1">)print
+longname print
+(</span> <span class="linkr">dataset</span></a></th></tr></div>\n)print
+(</table></td></tr>) print
+}
+{
+currentobject docavailable?
+{
+(<div class="menuitem"><hr width="90%" /><a class="menu" href=")print
+dup datasetdocurl
+(" OnMouseOver="self.status='dataset documentation';return true"><span class="linkr1">)print
+.longname print
+(</span> <span class="linkr">documentation</span></a></div>\n)print
+} if
+ifdefvar?
+{
+    (<div class="menuitem"><hr width="90%" /><a class="menu" href="/)print
+	currentobject /myprocds get
+dataseturl dup
+    (/" OnMouseOver="self.status=') print
+	myproc length 0 eq{
+	(Source of )print
+	}{
+	(Calculation for )print
+	}ifelse
+    printdescriptionno'
+    ('; return true"><span class="linkr1">) print
+pop
+dup /long_name known
+{long_name}
+{name cvntos} ifelse
+print
+	    (</span> <span class="linkr">)print
+	myproc length 0 eq{
+	(source)print
+	}{
+	(calculation)print
+	}ifelse
+
+(</span></a>)print
+    (</div>) print
+} if
+} ifelse
+currentobject
+gcmdidavailable?
+{
+(<div class="menuitem"><a class="linkra" href=")print
+(http://gcmd.nasa.gov/getdif.htm?) print
+.GCMD_id print
+(" OnMouseOver="self.status='dataset documentation';return true">)print
+(GCMD entry) print
+(</a></div>) print
+} if
+(<div class="menuitem"><hr width="90%" /><a class="linkr" href="mailto:help@iri.columbia.edu?subject=http://iridl.ldeo.columbia.edu)print
+WWWinfo /url getknown { dup type /stringtype eq {urlprint}{pop} ifelse} if
+(" OnMouseOver="self.status='Any questions or comments?  Please let us know.';return true"><img src="/icons/mailicon7.gif" alt="help" width="30" height="20" border="0" /><br />help</a></div>\n)print
+(\n</div>\n)print
+} def
+/standardHeader:simple {
+(<head>\n) print
+(<link rel="stylesheet" type="text/css" href="/site.css" />\n)print
+portaldlscript
+maybeGoogleAnalyticsHead
+(</head>\n) print
+(<body bgcolor="white" link="#990000" vlink="#CC3333" alink="#FF0000")print
+WWWinfo /onload getknown { ( onload=")print print (")print} if
+WWWinfo /onunload getknown { ( onunload=")print print (")print} if
+(>\n) print
+} def
+%/standardHeader {(<body>\n) print } def
+/standardTrailer
+{
+(<table border=4><tr><th colspan=5>Climate Data Library</th></tr>\n)
+print
+(<tr>)print
+(<td><a )print
+(href="/" OnMouseOver="self.status='Climate Data Library Catalog';return true">Catalog</a></td>\n)print
+%(<td><a class="menu" href="/docfind/searches/")print
+%(OnMouseOver="self.status='Search the Data Library';return true")print
+%(>Search</a></td>\n)print
+(<td><a class="menu" href="/dochelp/QA/")print
+( OnMouseOver="self.status='Climate Data Library Questions and Answers';return true">Q&A</a></td>\n)
+print
+(<td><a class="menu" href="http://rainbow.ldeo.columbia.edu/dl/ingrid/brief/")print
+( OnMouseOver="self.status='Climate Data Library Introduction';return true">Intro</a></td>\n)print
+(<td><a class="menu" href="http://rainbow.ldeo.columbia.edu/")print
+( OnMouseOver="self.status='LDEO Climate Group Home Page';return true">LDEO Climate Group</a></td>\n)print
+(<td><a class="menu" href="http://www.ldeo.columbia.edu/")print
+( OnMouseOver="self.status='Lamont-Doherty Earth Observatory of Columbia University Home Page';return true">LDEO</a></td>\n)print
+(</tr></table>\n)print
+(</body>\n) print
+} def
+/standardTrailer
+{
+(</body>\n) print
+} def
+\end{ingrid}
+Additional Directories
+\begin{description}
+\item[ees] ees material
+\item[descriptions] short descriptions of the datasets (searchable)
+\item[documentation] long documentation of datasets
+\item[filters] Additional filters for data manipulation
+\end{description}
+\begin{ingrid}
+/filters (/opt/ingrid/filters) dirdef
+/analyses (/opt/ingrid/analyses) dirdef
+/maproom (/opt/ingrid/maproom) dirdef
+/QA { (/dochelp/QA/)redirectto } def
+/ontologies (/opt/ingrid/ontologies)litdirdef
+/favicon.ico {icons .favicon.ico} def
+\end{ingrid}
+Here you can reset the location of the top of the cache directory tree.
+\begin{ingrid}
+/ingridcachedir ({{ingrid_cache_target}}) def
+\end{ingrid}
+\begin{ingrid}
+Ingrid: /robots.txt {
+mimeheader
+(User-agent: *\n) print
+(Disallow: /SOURCES/html+viewer/\n) print
+(Disallow: /expert\n) print
+(Disallow: /filters\n) print
+(Disallow: /home\n) print
+(Disallow: /%28\n) print
+(Disallow: /THREDDS\n) print
+(Disallow: /cgi-bin\n) print
+(Disallow: /sesame\n) print
+(Disallow: /ganglia\n) print
+(Disallow: /(plotaxislength)\n) print
+(Disallow: /ontologies/browse.pl\n) print
+(Disallow: /ontologies/query2.pl\n) print
+(Disallow: /*data.html\n) print
+(Disallow: /*.tsv\n) print
+(Disallow: /*.ch\n) print
+(Disallow: /*.r4\n) print
+(Disallow: /*.r8\n) print
+(Disallow: /*.i4\n) print
+(Disallow: /*.i2\n) print
+(Disallow: /*.asc\n) print
+(Disallow: /*help+filters\n) print
+(Disallow: /*help+pickgridvalues\n) print
+(Disallow: /*figviewer.html\n) print
+(Disallow: /*datatable.html\n) print
+(Disallow: /*datatable.tsv\n) print
+(Disallow: /*readthredds\n) print
+(Disallow: /*readfile\n) print
+(Disallow: /*.dataset/\n) print
+(Disallow: /*5Ddata.html\n) print
+(Disallow: /*5Ddata.tsv\n) print
+(Disallow: /*5Ddatatable.html\n) print
+(Disallow: /*5Ddatatable.tsv\n) print
+(Disallow: /*average/\n) print
+(Disallow: /*maxover/\n) print
+(Disallow: /*minover/\n) print
+(Disallow: /*rmsover/\n) print
+(Disallow: /*rmsaover/\n) print
+} put
+\end{ingrid}
+
+\begin{ingrid}
+Ingrid: /IRIDB (postgres) put
+\end{ingrid}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
