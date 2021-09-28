@@ -313,7 +313,10 @@
     content: |
       #!/usr/bin/bash -l
 
-      docker exec -it {{compose_project_name}}_postgres_1 psql -U postgres iridb
+      if [[ -t 0 ]]; then  # input is coming from an interactive terminal
+        tty_arg=-t
+      fi
+      docker exec -i $tty_arg {{compose_project_name}}_postgres_1 psql -U postgres iridb
     dest: /usr/local/bin/sql_interactive
     mode: 0744
 
