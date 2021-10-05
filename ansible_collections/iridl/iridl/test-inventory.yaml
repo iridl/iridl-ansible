@@ -35,7 +35,7 @@ all:
         # See defaults/main.yaml
         docker_registry_mirror: http://10.0.2.2:5000
 
-        dl_hostname: localhost:8082
+        dl_hostname: localhost:8090
         squid_test_hostport: localhost:8082
 
         # SMTP relay host:port in postfix format,
@@ -72,4 +72,4 @@ all:
       hosts:
         dlserver1:
           ansible_host: 127.0.0.1
-          ansible_port: 2225 # must match setting in Vagrantfile (TODO Vagrantfile)
+          ansible_port: 2230 # must match setting in Vagrantfile
