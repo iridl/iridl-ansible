@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-# This script should be run with sudo.
-
 export GIT_SSH=/usr/local/bin/ssh-bitbucket
 
 fail() {
@@ -28,6 +26,10 @@ init_git() {
     git submodule update --init --recursive || fail $? "failed to update submodules"
 
 }
+
+if [[ $(id -u) != 0 ]]; then
+    fail 1 "This script should be run with sudo."
+fi
 
 
 ### dlentries
