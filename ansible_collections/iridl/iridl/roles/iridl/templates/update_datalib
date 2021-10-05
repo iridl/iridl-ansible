@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-export GIT_SSH=/usr/local/bin/ssh-bitbucket
+export GIT_SSH=/usr/local/bin/ssh-git
 
 fail() {
     echo $2 >&2
