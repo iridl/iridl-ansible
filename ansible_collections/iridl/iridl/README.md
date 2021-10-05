@@ -1,3 +1,3 @@
 # Ansible Collection - iridl.iridl
 
-Documentation for the collection.
+An ansible role for installing and configuring the IRI Data Library software.
