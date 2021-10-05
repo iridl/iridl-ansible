@@ -100,7 +100,7 @@
 # Docker and docker-compose
 #
 - set_fact:
-    docker_ansible_venv: "{{dldir}}/ansible-docker-compose-venv"
+    docker_python: "/usr/bin/python3"
 
 - name: docker dir
   file:
@@ -141,30 +141,12 @@
     state: started
     enabled: true
 
-# Install the python docker and docker_compose modules in a venv
-# so that ansible can use them.
-
-- name: venv for docker ansible modules
-  pip:
-    virtualenv: "{{docker_ansible_venv}}"
-    virtualenv_command: python3 -m venv
-    name:
-      # matching the version of /usr/bin/docker-compose, otherwise we
-      # sometimes get into a tug-of-war between command-line
-      # operations and ansible.
-      - docker-compose==1.18.0
-    # Inherit the system python's site-packages. This is bad for
-    # environment isolation, but it's the only way to get the RPM
-    # python bindings into a virtualenv, since they haven't been
-    # published as a pip-installable package.
-    virtualenv_site_packages: yes
-
 - name: docker login
   docker_login:
     username: iridlserver
     password: "{{docker_hub_access_token}}"
   vars:
-    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+    ansible_python_interpreter: "{{docker_python}}"
   when: docker_hub_access_token is defined
   # Intentionally not logging out. The (read-only) access token is
   # stored unencrypted on the server, and we're ok with that.
@@ -174,7 +156,7 @@
     name: iridl/maproom-dev:{{maproom_dev_version}}
     source: pull
   vars:
-    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+    ansible_python_interpreter: "{{docker_python}}"
 
 
 #
@@ -379,7 +361,7 @@
     debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
   vars:
-    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+    ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
 
 - debug:
@@ -394,7 +376,7 @@
 #     images_filters:
 #       dangling: false
 #   vars:
-#     ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+#     ansible_python_interpreter: "{{docker_python}}"
 
 
 #

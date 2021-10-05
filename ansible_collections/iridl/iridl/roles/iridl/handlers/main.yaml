@@ -24,7 +24,7 @@
     # See https://github.com/ansible-collections/community.general/issues/293
     timeout: "{{squid_shutdown_lifetime + 10}}"
   vars:
-    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+    ansible_python_interpreter: "{{docker_python}}"
 
 - name: reload postfix
   service:
@@ -38,4 +38,4 @@
       - ingrid
     restarted: yes
   vars:
-    ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+    ansible_python_interpreter: "{{docker_python}}"
