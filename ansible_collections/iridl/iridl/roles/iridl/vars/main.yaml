@@ -11,4 +11,4 @@ fbfmaproom_uid: 48
 datag_uid: 4031
 ingrid_uid: 30001
 
-ingrid_cache_target: /ingrid-cache  # TODO this shouldn't be configurable. Set it inside the container.
+ingrid_cache_target: /ingrid-cache
