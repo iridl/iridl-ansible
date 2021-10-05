@@ -141,18 +141,18 @@
     state: started
     enabled: true
 
-# Install the python docker and docker_compose modules in a virtualenv
+# Install the python docker and docker_compose modules in a venv
 # so that ansible can use them.
 
-- name: install virtualenv tool
-  yum:
-    name: python-virtualenv
-
-- name: virtualenv for docker ansible modules
+- name: venv for docker ansible modules
   pip:
     virtualenv: "{{docker_ansible_venv}}"
+    virtualenv_command: python3 -m venv
     name:
-      - docker-compose==1.24.1
+      # matching the version of /usr/bin/docker-compose, otherwise we
+      # sometimes get into a tug-of-war between command-line
+      # operations and ansible.
+      - docker-compose==1.18.0
     # Inherit the system python's site-packages. This is bad for
     # environment isolation, but it's the only way to get the RPM
     # python bindings into a virtualenv, since they haven't been
