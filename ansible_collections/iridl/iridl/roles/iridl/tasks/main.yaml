@@ -236,39 +236,39 @@
 
 # TODO: eliminate specific dependence on bitbucket
 
-- name: add bitbucket host key to ssh_known_hosts
-  known_hosts:
-    name: bitbucket.org
-    # This is a public key, not a secret, so no need to encrypt it.
-    key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+- block:
+    - name: add bitbucket host key to ssh_known_hosts
+      known_hosts:
+        name: bitbucket.org
+        # This is a public key, not a secret, so no need to encrypt it.
+        key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
 
+    - name: ssh access key directory
+      # let's keep all data library files together
+      file:
+        path: "{{dldir}}/ssh"
+        state: directory
+        mode: 0700
 
-- name: ssh access key directory
-  # let's keep all data library files together
-  file:
-    path: "{{dldir}}/ssh"
-    state: directory
-    mode: 0700
+    - set_fact:
+        bitbucket_key_file: "{{dldir}}/ssh/id_rsa-bitbucket"
 
-- set_fact:
-    bitbucket_key_file: "{{dldir}}/ssh/id_rsa-bitbucket"
+    - name: bitbucket ssh key
+      copy:
+        dest: "{{bitbucket_key_file}}"
+        content: "{{bitbucket_key}}"
+        mode: 0600
 
-- name: bitbucket ssh key
-  copy:
-    dest: "{{bitbucket_key_file}}"
-    content: "{{bitbucket_key}}"
-    mode: 0600
-  # If the repo is public then no key is required. 
+    - name: ssh command for bitbucket
+      copy:
+        dest: "/usr/local/bin/ssh-bitbucket"
+        mode: 0744
+        content: |
+          #!/bin/sh
+          ssh -i {{bitbucket_key_file}} -o IdentitiesOnly=yes "$@"
+
+  # If we clone over anonymous HTTPS then no ssh key is required.
   when: bitbucket_key is defined
-
-- name: ssh command for bitbucket
-  copy:
-    dest: "/usr/local/bin/ssh-bitbucket"
-    mode: 0744
-    content: |
-      #!/bin/sh
-      ssh -i {{bitbucket_key_file}} -o IdentitiesOnly=yes "$@"
-
 
 #
 # Scripts for managing data
