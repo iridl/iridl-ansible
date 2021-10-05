@@ -52,7 +52,7 @@ fi
 
 docker run --rm $interactive_args --user 0 \
        -v $PWD:/build/maproom iridl/maproom-dev:{{maproom_dev_version}} \
-       ./build.sh install || fail $? "maproom build failed"
+       ./build.sh utbuild.tag || fail $? "maproom build failed"
 
 mkdir -p {{maproom_install_dir}} || fail $? "couldn't create install dir"
 cp -r ___build/* {{maproom_install_dir}} || fail $? "failed to install maprooms"
