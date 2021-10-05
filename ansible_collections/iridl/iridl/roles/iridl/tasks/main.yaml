@@ -165,6 +165,7 @@
     password: "{{docker_hub_access_token}}"
   vars:
     ansible_python_interpreter: "{{docker_ansible_venv}}/bin/python"
+  when: docker_hub_access_token is defined
   # Intentionally not logging out. The (read-only) access token is
   # stored unencrypted on the server, and we're ok with that.
 
