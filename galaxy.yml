@@ -9,3 +9,10 @@ description: Tools for installing and maintaining a server that runs the IRI Dat
 license: MIT
 
 repository: https://github.com/iridl/iridl-ansible
+
+build_ignore:
+  - test-inventory-iri.yaml
+  - test-inventory.yaml
+  - test-secrets.yaml
+  - test.yaml
+  - Vagrantfile
