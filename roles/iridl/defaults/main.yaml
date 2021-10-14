@@ -21,3 +21,9 @@ docker_max_concurrent_downloads: 3
 # -e run_update_script when first installing the software, but not
 # when updating the configuration of an existing installation.
 run_update_script: no
+
+# By default, /usr/local/bin/update_datalib updates dlentries and
+# maprooms to their latest commit. You can override this with a
+# branch, tag, or commit hash if desired.
+dlentries_version: master
+maproom_version: master
