@@ -22,7 +22,16 @@
 
     # Email address that users of your Data Library should write
     # to for help
-    support_email:
+    support_email: help@example.com
+
+    # Email addresses to which automated messages about system
+    # status will be sent
+    admin_emails:
+      - joe.admin@example.com
+      - it_support@example.com
+
+    # SMTP server in postfix config file format
+    mail_relay: "[mail.example.com]:25"
 
     # Replace with the URLs of your country-specific dlentries and
     # maproom repositories. Here we are using anonymous access
