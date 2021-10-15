@@ -1,6 +1,6 @@
 - hosts: dlservers
   vars_files:
-    - test-secrets.yaml
+    - secrets.yaml
   vars:
     # ansible_pipelining speeds things up, but according to the
     # docs it conflicts with some uses of become. Everything is

@@ -11,10 +11,5 @@ license: MIT
 repository: https://github.com/iridl/iridl-ansible
 
 build_ignore:
-  - test-inventory-iri.yaml
-  - test-inventory.yaml
-  - test-secrets.yaml
-  - test.yaml
-  - Vagrantfile
-  - .vagrant*
-  - test.sh
+  - tests
+  - example

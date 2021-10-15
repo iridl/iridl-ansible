@@ -1,0 +1,60 @@
+#!/bin/bash
+
+fail() {
+  echo $*
+  exit 1
+}
+
+# With --keepvm, leaves the VM running for inspection when it finishes.
+# With --destroyvm, tears down the VM when done with it.
+# With neither, an interactive prompt asks whether to destroy it or not.
+if [[ "$1" == "--keepvm" ]]; then
+    keepvm=1
+elif [[ "$1" == "--destroyvm" ]]; then
+    destroyvm=1
+elif [[ -n "$1" ]]; then
+    fail "Usage: $0 [--keepvm|--destroyvm]"
+fi
+
+
+cleanup() {
+    # output to /dev/null to supress confusing message "Not logged in"
+    # when script exits before completing the login step.
+    docker logout > /dev/null
+    [[ -n "$builddir" ]] && rm -rf $builddir
+}
+
+trap cleanup EXIT
+
+cd $(dirname $0) || fail
+
+
+builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || fail "failed to create build dir"
+export ANSIBLE_COLLECTIONS_PATH=$builddir
+
+ansible-galaxy collection install .. || fail
+(cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker)
+ansible_test_status=$?
+
+vagrant up || fail "vagrant up failed"
+
+final_status=0
+
+ansible-playbook \
+    -i inventory.yaml \
+    -e @vars-iri.yaml \
+    -e run_update_script=yes \
+    ../example/playbook.yaml
+playbook_status=$?
+
+if [[ -n $destroyvm ]]; then
+    vagrant destroy --force
+elif [[ -z $keepvm ]]; then
+    vagrant destroy
+fi
+
+echo ansible-test: $ansible_test_status
+echo playbook: $playbook_status
+final_status=$(( $playbook_status || $ansible_test_status ))
+echo final status: $final_status
+exit $final_status
