@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "dlserver1", primary: true do |x|
     x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
-    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match dl_hostname in inventory
+    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match dl_hostport in inventory
     x.vm.provider :virtualbox do |vb|
       vb.memory = 3 * 1024
     end

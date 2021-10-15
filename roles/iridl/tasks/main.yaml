@@ -196,7 +196,7 @@
     src: squid.conf
     dest: "{{squid_config_dir}}/squid.conf"
   vars:
-    dl_hostname_regex: "{{ dl_hostname | replace('.', '\\.') }}"
+    dl_hostport_regex: "{{ dl_hostport | replace('.', '\\.') }}"
   notify: reconfigure squid
 
 
@@ -402,7 +402,7 @@
 
 - name: service tests
   uri:
-    url: http://{{dl_hostname}}{{item}}
+    url: http://{{dl_hostport}}{{item}}
     headers:
       Cache-Control: no-cache # force squid to talk to the backend
   retries: 5

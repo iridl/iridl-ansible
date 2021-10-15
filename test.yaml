@@ -17,7 +17,7 @@
     # See defaults/main.yaml
     docker_registry_mirror: http://10.0.2.2:5000
 
-    dl_hostname: localhost:8090
+    dl_hostport: localhost:8090
 
     # SMTP relay host:port in postfix format,
     # e.g. [mail-relay.iri.columbia.edu]:25
