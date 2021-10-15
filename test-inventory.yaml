@@ -18,6 +18,19 @@ all:
         # disabling it for individual tasks that are problematic.
         ansible_pipelining: true
 
+        # See defaults/main.yaml
+        docker_registry_mirror: http://10.0.2.2:5000
+
+        dl_hostport: "{{ansible_host}}:8090"
+
+        # SMTP relay host:port in postfix format,
+        # e.g. [mail-relay.iri.columbia.edu]:25
+        mail_relay:
+
+        # Email address to which automated messages about system
+        # status will be sent
+        admin_emails: []
+
       hosts:
         dlserver1:
           ansible_host: 127.0.0.1
