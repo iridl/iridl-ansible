@@ -16,3 +16,4 @@ build_ignore:
   - test-secrets.yaml
   - test.yaml
   - Vagrantfile
+  - .vagrant*
