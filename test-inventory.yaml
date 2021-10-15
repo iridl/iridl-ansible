@@ -21,6 +21,7 @@ all:
         # See defaults/main.yaml
         docker_registry_mirror: http://10.0.2.2:5000
 
+        # The hostname and port that users will visit.
         dl_hostport: "{{ansible_host}}:8090"
 
         # SMTP relay host:port in postfix format,
