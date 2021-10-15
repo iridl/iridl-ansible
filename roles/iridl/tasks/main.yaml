@@ -402,7 +402,7 @@
 
 - name: service tests
   uri:
-    url: http://{{squid_test_hostport | default(ansible_nodename)}}{{item}}
+    url: http://{{dl_hostname}}{{item}}
     headers:
       Cache-Control: no-cache # force squid to talk to the backend
   retries: 5

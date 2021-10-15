@@ -18,7 +18,6 @@
     docker_registry_mirror: http://10.0.2.2:5000
 
     dl_hostname: localhost:8090
-    squid_test_hostport: localhost:8090  # must match host port in Vagrantfile
 
     # SMTP relay host:port in postfix format,
     # e.g. [mail-relay.iri.columbia.edu]:25
