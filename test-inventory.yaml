@@ -12,12 +12,6 @@ all:
         ansible_user: vagrant
         ansible_become: true
 
-        # ansible_pipelining speeds things up, but according to the
-        # docs it conflicts with some uses of become. Everything is
-        # working ok so far; if it causes problems in the future, try
-        # disabling it for individual tasks that are problematic.
-        ansible_pipelining: true
-
         # See defaults/main.yaml
         docker_registry_mirror: http://10.0.2.2:5000
 

@@ -2,6 +2,12 @@
   vars_files:
     - test-secrets.yaml
   vars:
+    # ansible_pipelining speeds things up, but according to the
+    # docs it conflicts with some uses of become. Everything is
+    # working ok so far; if it causes problems in the future, try
+    # disabling it for individual tasks that are problematic.
+    ansible_pipelining: true
+
     # Path of the directory where datasets are stored. This is
     # typically a volume with multiple TB of space, and ideally
     # not the root volume.
