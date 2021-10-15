@@ -27,3 +27,8 @@ run_update_script: no
 # branch, tag, or commit hash if desired.
 dlentries_version: master
 maproom_version: master
+
+# The hostname and optional port that users will connect to. This might not be
+# the same as the port squid is listening on, if there's another proxy in
+# between.
+dl_hostport: "{{ansible_host}}"
