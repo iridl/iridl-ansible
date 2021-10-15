@@ -4,6 +4,14 @@
 - name: disable selinux
   selinux:
     state: disabled
+  register: disable_selinux
+
+# Reboot to make the selinux state change. This has to happen before
+# we start the containers for the first time, because docker-compose
+# fails to restart services that were running before the state change.
+- name: reboot if necessary to change selinux state
+  reboot:
+  when: disable_selinux.reboot_required
 
 - name: enable EPEL yum repo
   yum:
