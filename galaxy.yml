@@ -17,3 +17,4 @@ build_ignore:
   - test.yaml
   - Vagrantfile
   - .vagrant*
+  - test.sh

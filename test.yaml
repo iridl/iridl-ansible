@@ -53,4 +53,4 @@
     dlsquid_version: e16cb8b
 
   roles:
-    - iridl
+    - iridl.iridl.iridl
