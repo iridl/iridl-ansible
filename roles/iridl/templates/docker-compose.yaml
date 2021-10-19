@@ -43,7 +43,7 @@ services:
     image: iridl/ingriddb:{{ingriddb_version}}
     expose:
       - 5432
-    command: "run {{ingrid_postgres_password}}"
+    command: "run"
     volumes:
       - "{{sql_dir}}:/sql:rslave,ro"
       - type: volume
@@ -59,7 +59,6 @@ services:
       - 80
     restart: always
     environment:
-      INGRID_POSTGRES_PASSWORD: "{{ingrid_postgres_password}}"
       http_proxy: http://squid:3128
     volumes:
       - "{{ingrid_config_dir}}/localdefs.tex:/opt/ingrid/localdefs.tex:rslave,ro"
