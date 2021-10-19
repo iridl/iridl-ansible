@@ -427,11 +427,26 @@
   changed_when: no
   check_mode: no # run even in check mode
 
-# TODO this ought to pass but currently doesn't, indicating that we
-# haven't configured the proxy correctly.
-# - name: test outbound proxy
-#   command: docker exec {{compose_project_name}}_ingrid_1 curl -sI google.com
-#   register: squid_test
-#   changed_when: no
-#   check_mode: no
-#   failed_when: "'HTTP/1.1 301 Moved Permanently' not in squid_test.stdout_lines"
+- name: test outbound proxy
+  command: 'docker exec datalib_ingrid_1 bash -c "curl --silent --header \"Cache-Control: no-cache\" -o /dev/null -w %{http_code} example.com"'
+  register: outbound_test
+  check_mode: no
+  changed_when: no
+  failed_when: outbound_test.stdout != "200"
+
+- name: verify that ingrid can talk to db
+  uri:
+    url: http://{{dl_hostport}}/IRIDB/(select%20count(*)%20from%20nosuchtable)/openquery/
+    headers:
+      Cache-Control: no-cache
+    return_content: yes
+  retries: 5
+  delay: 5
+  register: result
+  until: result is success
+  delegate_to: localhost
+  become: false
+  # If we can't talk to the db then we get a different error message.
+  # Once we have a test db fixture, change the test to look for an actual table.
+  failed_when: "'ERROR:  relation \"nosuchtable\" does not exist' not in result.content"
+  check_mode: no
