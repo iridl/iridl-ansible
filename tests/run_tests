@@ -41,21 +41,16 @@ final_status=$(( $final_status || $ansible_test_status ))
 
 vagrant up || fail "vagrant up failed"
 
-ansible-playbook \
-    -i inventory.yaml \
-    -e @vars-iri.yaml \
-    -e run_update_script=yes \
+apb_command="ansible-playbook
+    -i inventory.yaml
+    -e @vars-iri.yaml
     ../example/playbook.yaml
-playbook_status=$?
-final_status=$(( $final_status || $playbook_status ))
+"
+
+$apb_command -e run_update_scripts=yes || fail
 
 # second run to check idempotency
-output=$(
-    ansible-playbook \
-    -i inventory.yaml \
-    -e @vars-iri.yaml \
-    ../example/playbook.yaml
-)
+output=$($apb_command)
 playbook2_status=$?
 final_status=$(( $final_status || $playbook2_status ))
 
