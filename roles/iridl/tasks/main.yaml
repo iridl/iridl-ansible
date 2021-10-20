@@ -428,11 +428,11 @@
   check_mode: no # run even in check mode
 
 - name: test outbound proxy
-  command: 'docker exec datalib_ingrid_1 bash -c "curl --silent --header \"Cache-Control: no-cache\" -o /dev/null -w %{http_code} example.com"'
+  command: 'docker exec {{compose_project_name}}_ingrid_1 bash -c "curl --silent --header \"Cache-Control: no-cache\" -o /dev/null -w %{http_code} google.com"'
   register: outbound_test
   check_mode: no
   changed_when: no
-  failed_when: outbound_test.stdout != "200"
+  failed_when: outbound_test.stdout != "301"
 
 - name: verify that ingrid can talk to db
   uri:
