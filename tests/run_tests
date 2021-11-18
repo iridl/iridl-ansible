@@ -47,7 +47,7 @@ apb_command="ansible-playbook
     ../example/playbook.yaml
 "
 
-$apb_command -e run_update_scripts=yes || fail
+$apb_command -e run_update_script=yes || fail
 
 # second run to check idempotency
 output=$($apb_command)
