@@ -35,9 +35,7 @@ export ANSIBLE_COLLECTIONS_PATH=$builddir
 final_status=0
 
 ansible-galaxy collection install .. || fail
-(cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker)
-ansible_test_status=$?
-final_status=$(( $final_status || $ansible_test_status ))
+(cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker) || fail
 
 vagrant up || fail "vagrant up failed"
 
