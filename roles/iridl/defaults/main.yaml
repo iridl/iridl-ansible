@@ -32,3 +32,15 @@ maproom_version: master
 # the same as the port squid is listening on, if there's another proxy in
 # between.
 dl_hostport: "{{ansible_host}}"
+
+# The mount point of a large disk volume. Used to define data_dir and
+# docker_dir below.
+data_mountpoint: /data
+
+# Path of the directory where datasets are stored. This is typically a
+# volume with multiple TB of space, and ideally not the root volume.
+data_dir: "{{data_mountpoint}}/datalib"
+
+# Path of the directory where datasets are stored. This is typically a
+# volume with multiple TB of space, and ideally not the root volume.
+docker_dir: "{{data_mountpoint}}/docker"
