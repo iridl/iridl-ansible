@@ -30,6 +30,14 @@
     dlentries_repo: https://bitbucket.org/iridl/dlentries_testcountry.git
     maproom_repo: https://bitbucket.org/iridl/maproom_testcountry.git
 
+    # Unix users that should be members of the datag group. User
+    # accounts will be created if they don't already exist. Newly
+    # created users won't be able to log in until an admin manually
+    # sets their password.
+    datag_users:
+      # username: uid
+      testuser: 1001
+
     # Container version numbers for the various Data Library software
     # packages. Do not use "latest", or you might find your software
     # being updated when you don't expect it, potentially to a

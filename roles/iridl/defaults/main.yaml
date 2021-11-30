@@ -41,6 +41,9 @@ data_mountpoint: /data
 # volume with multiple TB of space, and ideally not the root volume.
 data_dir: "{{data_mountpoint}}/datalib"
 
+# Parent directory of individual DL users' data directories
+dl_homes_dir: "{{data_dir}}/home"
+
 # Path of the directory where datasets are stored. This is typically a
 # volume with multiple TB of space, and ideally not the root volume.
 docker_dir: "{{data_mountpoint}}/docker"

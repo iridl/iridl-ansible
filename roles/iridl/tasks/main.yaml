@@ -85,6 +85,18 @@
     regexp: "^GID_MAX"
     line: GID_MAX 1099 # reduce from default of 60000, which overlaps with our system users
 
+- name: user accounts
+  user:
+    name: "{{item.key}}"
+    uid: "{{item.value}}"
+    groups: datag
+    append: yes
+  loop: "{{datag_users | dict2items}}"
+
+
+#
+# Directories
+#
 - name: data dir
   file:
     path: "{{data_dir}}"
@@ -102,7 +114,26 @@
     path: "{{dldir}}/etc"
     state: directory
 
+- name: DL user dirs parent
+  file:
+    path: "{{dl_homes_dir}}"
+    state: directory
 
+- name: DL user dirs
+  file:
+    path: "{{dl_homes_dir}}/{{item}}"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{datag_users}}"
+
+- name: DL user homes
+  file:
+    path: "{{dl_homes_dir}}/{{item}}/DataCatalog"
+    state: directory
+    owner: "{{item}}"
+    group: "{{item}}"
+  with_items: "{{datag_users}}"
 
 #
 # Docker and docker-compose
@@ -423,6 +454,7 @@
     - /
     - /expert  # ingrid
     - /SOURCES/ # verify data volume is mounted
+    - /home/{{(datag_users.keys() | list)[0]}}/
     - /maproom/
   changed_when: no
   check_mode: no # run even in check mode

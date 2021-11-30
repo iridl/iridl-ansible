@@ -166,6 +166,39 @@ Additional Directories
 /analyses (/opt/ingrid/analyses) dirdef
 /maproom (/opt/ingrid/maproom) dirdef
 /QA { (/dochelp/QA/)redirectto } def
+Ingrid: /home {
+
+  Ingrid: newdataset:
+    /name (home) cvn cvx def
+    /myproc[name]def
+    :datasetnostore
+   name exch put
+
+  (/home/) interpurl
+  continuedataset:
+
+  % last_modified affects HTTP caching for
+  % iridl.ldeo.columbia.edu/home. That page doesn't display a list of
+  % subdatasets, so it's not important to update this when adding a new
+  % homedir.
+  1576254598 set_last_modified
+
+  {% for user in datag_users %}
+  ({{user}})cvn ({{dl_homes_dir}}/{{user}}/DataCatalog) insertdirasdataset
+  {% endfor%}
+
+  :continuedataset
+  pop
+
+
+  Ingrid: /home
+  home continuedataset: datasetdefs: :datasetdefs :continuedataset
+  /fullname (home) def
+  /myproc [ name ] def
+  /myprocds 1 index def
+  put
+  Ingrid: .home
+} put
 /ontologies (/opt/ingrid/ontologies)litdirdef
 /favicon.ico {icons .favicon.ico} def
 \end{ingrid}
