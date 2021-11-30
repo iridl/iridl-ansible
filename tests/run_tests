@@ -32,40 +32,44 @@ cd $(dirname $0) || fail
 builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || fail "failed to create build dir"
 export ANSIBLE_COLLECTIONS_PATH=$builddir
 
-final_status=0
+all_tests() {
+    final_status=0
 
-ansible-galaxy collection install .. || fail
-(cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker) || fail
+    ansible-galaxy collection install .. || fail
+    (cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker) || fail
 
-vagrant up || fail "vagrant up failed"
+    vagrant up || fail "vagrant up failed"
 
-apb_command="ansible-playbook
-    -i inventory.yaml
-    -e @vars-iri.yaml
-    ../example/playbook.yaml
-"
+    apb_command="ansible-playbook
+        -i inventory.yaml
+        -e @vars-iri.yaml
+        ../example/playbook.yaml
+    "
 
-$apb_command -e run_update_script=yes || fail
+    $apb_command -e run_update_script=yes || fail
 
-# second run to check idempotency
-output=$($apb_command)
-playbook2_status=$?
-final_status=$(( $final_status || $playbook2_status ))
+    # second run to check idempotency
+    output=$($apb_command)
+    playbook2_status=$?
+    final_status=$(( $final_status || $playbook2_status ))
 
-echo "$output" | grep '^dlserver1 .*changed=0 '
-idempotency_status=$?
-final_status=$(( $final_status || $idempotency_status ))
+    echo "$output" | grep '^dlserver1 .*changed=0 '
+    idempotency_status=$?
+    final_status=$(( $final_status || $idempotency_status ))
 
 
-if [[ -n $destroyvm ]]; then
-    vagrant destroy --force
-elif [[ -z $keepvm ]]; then
-    vagrant destroy
-fi
+    if [[ -n $destroyvm ]]; then
+        vagrant destroy --force
+    elif [[ -z $keepvm ]]; then
+        vagrant destroy
+    fi
 
-echo ansible-test: $ansible_test_status
-echo playbook: $playbook_status
-echo second run: $playbook2_status
-echo idempotency: $idempotency_status
-echo final status: $final_status
-exit $final_status
+    echo ansible-test: $ansible_test_status
+    echo playbook: $playbook_status
+    echo second run: $playbook2_status
+    echo idempotency: $idempotency_status
+    echo final status: $final_status
+    return $final_status
+}
+
+all_tests
