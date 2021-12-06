@@ -325,7 +325,7 @@
     state: directory
     owner: datag
     group: datag
-    mode: u=rwx,g=rwxs,o=rxl
+    mode: u=rwx,g=rwxs,o=rx
 
 - name: sql import script
   copy:
