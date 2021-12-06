@@ -1,3 +1,5 @@
+dl_homes_dir: "{{dataset_parent_dir}}/home"
+data_dir: "{{dataset_parent_dir}}/data"
 dlentries_dir: "{{dldir}}/dlentries"
 ingrid_config_dir: "{{dldir}}/etc/ingrid"
 fbfmaproom_config_dir: "{{dldir}}/etc/fbfmaproom"

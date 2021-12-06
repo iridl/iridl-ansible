@@ -66,13 +66,6 @@
     name: datag
     uid: "{{datag_uid}}"
 
-- name: allow members of datag group to sudo -u datag so they can install data files
-  copy:
-    content: |
-      %datag ALL=(datag) NOPASSWD: ALL
-    dest: /etc/sudoers.d/become_datag
-    mode: 0400
-
 - name: Set UID range for human users
   lineinfile:
     path: /etc/login.defs
@@ -97,12 +90,21 @@
 #
 # Directories
 #
+- name: parent of production and user data dirs
+  file:
+    path: "{{dataset_parent_dir}}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
 - name: data dir
   file:
     path: "{{data_dir}}"
     state: directory
     owner: datag
     group: datag
+    mode: u=rwx,g=rwxs,o=rx
 
 - name: datalib dir
   file:
@@ -118,6 +120,9 @@
   file:
     path: "{{dl_homes_dir}}"
     state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
 
 - name: DL user dirs
   file:
@@ -125,6 +130,7 @@
     state: directory
     owner: "{{item}}"
     group: "{{item}}"
+    mode: u=rwx,g=rx,o=rx
   with_items: "{{datag_users}}"
 
 - name: DL user homes
@@ -133,6 +139,7 @@
     state: directory
     owner: "{{item}}"
     group: "{{item}}"
+    mode: u=rwx,g=rx,o=rx
   with_items: "{{datag_users}}"
 
 #
@@ -318,6 +325,7 @@
     state: directory
     owner: datag
     group: datag
+    mode: u=rwx,g=rwxs,o=rxl
 
 - name: sql import script
   copy:

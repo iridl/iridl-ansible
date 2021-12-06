@@ -62,7 +62,7 @@ services:
       http_proxy: http://squid:3128
     volumes:
       - "{{ingrid_config_dir}}/localdefs.tex:/opt/ingrid/localdefs.tex:rslave,ro"
-      - "{{data_dir}}:{{data_dir}}:rslave,ro" # path in container must match path used in catalog entries
+      - "{{dataset_parent_dir}}:{{dataset_parent_dir}}:rslave,ro" # path in container must match path used in catalog entries
       - "{{dlentries_dir}}:/dlentries:rslave,ro" # path in container must match dockerized ingrid's config.lua
 
       - type: volume

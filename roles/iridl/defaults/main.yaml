@@ -33,16 +33,14 @@ maproom_version: master
 # between.
 dl_hostport: "{{ansible_host}}"
 
-# The mount point of a large disk volume. Used to define data_dir and
-# docker_dir below.
+# The mount point of a large disk volume (typically multiple TB). The
+# base of defaults for other directories defined below.
 data_mountpoint: /data
 
-# Path of the directory where datasets are stored. This is typically a
-# volume with multiple TB of space, and ideally not the root volume.
-data_dir: "{{data_mountpoint}}/datalib"
-
-# Parent directory of individual DL users' data directories
-dl_homes_dir: "{{data_dir}}/home"
+# Root directory of DL dataset storage. Will have subdirectories named
+# home (for datasets under development) and data (for published
+# datasets).
+dataset_parent_dir: "{{data_mountpoint}}/datalib"
 
 # Path of the directory where datasets are stored. This is typically a
 # volume with multiple TB of space, and ideally not the root volume.
