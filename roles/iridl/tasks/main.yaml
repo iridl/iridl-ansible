@@ -217,7 +217,7 @@
     job: docker exec {{compose_project_name}}_squid_1 squid -k rotate
 
 - set_fact:
-    squid_config_dir: "{{dldir}}/etc/squid"
+    squid_config_dir: "{{dldir}}/squid"
     squid_shutdown_lifetime: 30
 
 - name: squid group
