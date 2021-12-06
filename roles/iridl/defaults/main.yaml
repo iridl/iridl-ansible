@@ -1,5 +1,5 @@
-dldir: /usr/local/datalib
 compose_project_name: datalib
+dldir: /usr/local/{{compose_project_name}}
 docker_virtual_network: 172.18.0.0/24
 ntp_servers:
   - 0.pool.ntp.org
