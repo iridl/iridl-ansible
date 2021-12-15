@@ -1,11 +1,5 @@
 - hosts: dlservers
   vars:
-    # ansible_pipelining speeds things up, but according to the
-    # docs it conflicts with some uses of become. Everything is
-    # working ok so far; if it causes problems in the future, try
-    # disabling it for individual tasks that are problematic.
-    ansible_pipelining: true
-
     # Email address that users of your Data Library should write
     # to for help
     support_email: help@example.com
