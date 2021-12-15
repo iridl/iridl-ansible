@@ -13,16 +13,19 @@
     # SMTP server in postfix config file format
     mail_relay: "[mail.example.com]:25"
 
-    # Replace with the URLs of your country-specific dlentries and
-    # maproom repositories. Here we are using anonymous access
-    # over HTTPS, but if your repositories require authentication,
-    # configure the access key in the secrets file and specify the
-    # repositories like this:
-    #
-    #    dlentries_repo: git@bitbucket.org:iridl/dlentries_mycountry.git
-    #    maproom_repo: git@bitbucket.org:iridl/maproom_mycountry.git
-    dlentries_repo: https://bitbucket.org/iridl/dlentries_testcountry.git
-    maproom_repo: https://bitbucket.org/iridl/maproom_testcountry.git
+    # The server that hosts your dlentries and maproom repositories
+    git_host: bitbucket.org
+
+    # The git host's ssh host key. Find this with the following
+    # command, substituting the name of your git host for
+    # bitbucket.org:
+    # ssh-keyscan bitbucket.org 2>/dev/null
+    # This is a public key, not a secret, so it's ok to store here.
+    git_host_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+
+    # Your country-specific dlentries and maproom repositories
+    dlentries_repo: git@{{git_host}}:iridl/dlentries_testcountry.git
+    maproom_repo: git@{{git_host}}:iridl/maproom_testcountry.git
 
     # Unix users that should be members of the datag group. User
     # accounts will be created if they don't already exist. Newly

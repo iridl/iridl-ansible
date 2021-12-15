@@ -258,39 +258,35 @@
     state: directory
     mode: 0700
 
-- block:
-    - name: add git host key to ssh_known_hosts
-      known_hosts:
-        name: "{{git_host}}"
-        # This is a public key, not a secret, so no need to encrypt it.
-        key: "{{git_host_key}}"
+- name: add git host key to ssh_known_hosts
+  known_hosts:
+    name: "{{git_host}}"
+    # This is a public key, not a secret, so no need to encrypt it.
+    key: "{{git_host_key}}"
 
-    - name: ssh access key directory
-      # let's keep all data library files together
-      file:
-        path: "{{dldir}}/ssh"
-        state: directory
-        mode: 0700
+- name: ssh access key directory
+  # let's keep all data library files together
+  file:
+    path: "{{dldir}}/ssh"
+    state: directory
+    mode: 0700
 
-    - set_fact:
-        git_key_file: "{{dldir}}/ssh/id_rsa-git"
+- set_fact:
+    git_key_file: "{{dldir}}/ssh/id_rsa-git"
 
-    - name: git ssh key
-      copy:
-        dest: "{{git_key_file}}"
-        content: "{{git_key}}"
-        mode: 0600
+- name: git ssh key
+  copy:
+    dest: "{{git_key_file}}"
+    content: "{{git_key}}"
+    mode: 0600
 
-    - name: ssh command for git
-      copy:
-        dest: "/usr/local/bin/ssh-git"
-        mode: 0744
-        content: |
-          #!/bin/sh
-          ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
-
-  # If we clone over anonymous HTTPS then no ssh key is required.
-  when: git_key is defined
+- name: ssh command for git
+  copy:
+    dest: "/usr/local/bin/ssh-git"
+    mode: 0744
+    content: |
+      #!/bin/sh
+      ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
 
 #
 # Scripts for managing data
