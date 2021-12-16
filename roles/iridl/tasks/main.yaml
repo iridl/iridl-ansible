@@ -19,9 +19,7 @@
 
 - name: yum
   yum:
-    name: "{{ packages }}"
-  vars:
-    packages:
+    name:
       - screen
       - tmux
       - htop
@@ -163,9 +161,7 @@
 
 - name: install docker, docker-compose
   yum:
-    name: "{{packages}}"
-  vars:
-    packages:
+    name:
       - docker
       - docker-compose
 
