@@ -56,7 +56,7 @@ ansible-galaxy collection install .. || fail
 
 
 apb_command="ansible-playbook
-    -i inventory.yaml
+    -i inventory.cfg
     -e @vars-iri.yaml
     ../example/playbook.yaml
 "
