@@ -1,0 +1,15 @@
+namespace: iridl
+name: iridl
+version: 0.0.0
+
+readme: README.md
+authors:
+  - IRI Data Library Team <help@iri.columbia.edu>
+description: Tools for installing and maintaining a server that runs the IRI Data Library software
+license: MIT
+
+repository: https://github.com/iridl/iridl-ansible
+
+build_ignore:
+  - tests
+  - example

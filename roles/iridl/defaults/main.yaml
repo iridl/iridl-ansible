@@ -1,0 +1,47 @@
+compose_project_name: datalib
+dldir: /usr/local/{{compose_project_name}}
+docker_virtual_network: 172.18.0.0/24
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+# URL of a pull-through image registry cache. Setting this is useful
+# when testing the ansible role, to avoid re-downloading the same
+# images again and again. In a production configuration this is
+# usually left blank.
+docker_registry_mirror:
+
+# At a site with low internet bandwidth, reduce this to 1.
+docker_max_concurrent_downloads: 3
+
+# Override this on the command line with -e if you want to run the
+# script that updates dlentries and maprooms repos. We generally use
+# -e run_update_script when first installing the software, but not
+# when updating the configuration of an existing installation.
+run_update_script: no
+
+# By default, /usr/local/bin/update_datalib updates dlentries and
+# maprooms to their latest commit. You can override this with a
+# branch, tag, or commit hash if desired.
+dlentries_version: master
+maproom_version: master
+
+# The hostname and optional port that users will connect to. This might not be
+# the same as the port squid is listening on, if there's another proxy in
+# between.
+dl_hostport: "{{ansible_host}}"
+
+# The mount point of a large disk volume (typically multiple TB). The
+# base of defaults for other directories defined below.
+data_mountpoint: /data
+
+# Root directory of DL dataset storage. Will have subdirectories named
+# home (for datasets under development) and data (for published
+# datasets).
+dataset_parent_dir: "{{data_mountpoint}}/datalib"
+
+# Path of the directory where datasets are stored. This is typically a
+# volume with multiple TB of space, and ideally not the root volume.
+docker_dir: "{{data_mountpoint}}/docker"

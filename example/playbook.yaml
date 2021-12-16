@@ -1,0 +1,52 @@
+- hosts: dlservers
+  vars:
+    # ansible_pipelining speeds things up, but according to the
+    # docs it conflicts with some uses of become. Everything is
+    # working ok so far; if it causes problems in the future, try
+    # disabling it for individual tasks that are problematic.
+    ansible_pipelining: true
+
+    # Email address that users of your Data Library should write
+    # to for help
+    support_email: help@example.com
+
+    # Email addresses to which automated messages about system
+    # status will be sent
+    admin_emails:
+      - joe.admin@example.com
+      - it_support@example.com
+
+    # SMTP server in postfix config file format
+    mail_relay: "[mail.example.com]:25"
+
+    # Replace with the URLs of your country-specific dlentries and
+    # maproom repositories. Here we are using anonymous access
+    # over HTTPS, but if your repositories require authentication,
+    # configure the access key in the secrets file and specify the
+    # repositories like this:
+    #
+    #    dlentries_repo: git@bitbucket.org:iridl/dlentries_mycountry.git
+    #    maproom_repo: git@bitbucket.org:iridl/maproom_mycountry.git
+    dlentries_repo: https://bitbucket.org/iridl/dlentries_testcountry.git
+    maproom_repo: https://bitbucket.org/iridl/maproom_testcountry.git
+
+    # Unix users that should be members of the datag group. User
+    # accounts will be created if they don't already exist. Newly
+    # created users won't be able to log in until an admin manually
+    # sets their password.
+    datag_users:
+      # username: uid
+      testuser: 1001
+
+    # Container version numbers for the various Data Library software
+    # packages. Do not use "latest", or you might find your software
+    # being updated when you don't expect it, potentially to a
+    # non-backwards-compatible version
+    ingrid_version: d250324
+    ingriddb_version: d13b453
+    maproom_base_version: ce2f974
+    maproom_dev_version: ce2f974
+    dlsquid_version: e16cb8b
+
+  roles:
+    - iridl.iridl.iridl

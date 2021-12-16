@@ -1,0 +1,7 @@
+# Variable overrides for testing at IRI.
+
+# Public NTP servers are blocked inside the IRI network, so
+# without this override the chronyc test fails when run at IRI.
+ntp_servers:
+  - irione.iri.columbia.edu
+  - iritwo.iri.columbia.edu

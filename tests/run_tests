@@ -1,0 +1,101 @@
+#!/bin/bash
+
+fail() {
+  echo $*
+  exit 1
+}
+
+mode=all
+options=$(getopt -o k::m: --long keepvm::,mode: -- "$@") || fail
+eval set -- "$options"
+while true; do
+    case "$1" in
+        -k | --keepvm)
+            if [[ $2 == "y" || $2 == "" ]]; then
+                keepvm=1
+            elif [[ $2 == "n" ]]; then
+                destroyvm=1
+            else
+                fail "illegal --keepvm argument"
+            fi
+            shift 2;;
+        -m | --mode)
+            if [[ $2 == all ]]; then
+                mode=all
+            elif [[ $2 == one ]]; then
+                mode=one
+            else
+                fail "illegal --mode argument"
+            fi
+            shift 2;;
+        --)
+            shift
+            break;;
+        *)
+            fail "illegal argument";;
+    esac
+done
+
+
+cleanup() {
+    # output to /dev/null to supress confusing message "Not logged in"
+    # when script exits before completing the login step.
+    docker logout > /dev/null
+    [[ -n "$builddir" ]] && rm -rf $builddir
+}
+
+trap cleanup EXIT
+
+cd $(dirname $0) || fail
+
+
+builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || fail "failed to create build dir"
+export ANSIBLE_COLLECTIONS_PATH=$builddir
+
+ansible-galaxy collection install .. || fail
+
+
+apb_command="ansible-playbook
+    -i inventory.yaml
+    -e @vars-iri.yaml
+    ../example/playbook.yaml
+"
+
+all_tests() {
+    final_status=0
+
+    (cd $builddir/ansible_collections/iridl/iridl && ansible-test sanity --docker) || fail
+
+    vagrant up || fail "vagrant up failed"
+
+    $apb_command -e run_update_script=yes || fail
+
+    # second run to check idempotency
+    output=$($apb_command)
+    playbook2_status=$?
+    final_status=$(( $final_status || $playbook2_status ))
+
+    echo "$output" | grep '^dlserver1 .*changed=0 '
+    idempotency_status=$?
+    final_status=$(( $final_status || $idempotency_status ))
+
+
+    if [[ -n $destroyvm ]]; then
+        vagrant destroy --force
+    elif [[ -z $keepvm ]]; then
+        vagrant destroy
+    fi
+
+    echo ansible-test: $ansible_test_status
+    echo playbook: $playbook_status
+    echo second run: $playbook2_status
+    echo idempotency: $idempotency_status
+    echo final status: $final_status
+    return $final_status
+}
+
+if [[ $mode == all ]]; then
+    all_tests
+else
+    $apb_command
+fi
