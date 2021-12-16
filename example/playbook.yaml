@@ -32,15 +32,5 @@
       # username: uid
       testuser: 1001
 
-    # Container version numbers for the various Data Library software
-    # packages. Do not use "latest", or you might find your software
-    # being updated when you don't expect it, potentially to a
-    # non-backwards-compatible version
-    ingrid_version: d250324
-    ingriddb_version: d13b453
-    maproom_base_version: ce2f974
-    maproom_dev_version: ce2f974
-    dlsquid_version: e16cb8b
-
   roles:
     - iridl.iridl.iridl
