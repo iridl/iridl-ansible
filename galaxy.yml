@@ -12,4 +12,3 @@ repository: https://github.com/iridl/iridl-ansible
 
 build_ignore:
   - tests
-  - example
