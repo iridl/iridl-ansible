@@ -430,15 +430,6 @@
 
 - meta: flush_handlers
 
-- name: verify that chronyd has synchronized with a time server
-  shell: chronyc sources | grep '^\^\*'
-  register: chronyc_result
-  retries: 6
-  until: chronyc_result is success
-  delay: 10
-  changed_when: no
-  check_mode: no # run even in check mode
-
 - name: service tests
   uri:
     url: http://{{dl_hostport}}{{item}}
@@ -482,3 +473,12 @@
   # Once we have a test db fixture, change the test to look for an actual table.
   failed_when: "'ERROR:  relation \"nosuchtable\" does not exist' not in result.content"
   check_mode: no
+
+- name: verify that chronyd has synchronized with a time server
+  shell: chronyc sources | grep '^\^\*'
+  register: chronyc_result
+  retries: 6
+  until: chronyc_result is success
+  delay: 10
+  changed_when: no
+  check_mode: no # run even in check mode
