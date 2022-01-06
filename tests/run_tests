@@ -85,7 +85,6 @@ all_tests() {
     fi
 
     echo ansible-test: $ansible_test_status
-    echo playbook: $playbook_status
     echo second run: $playbook2_status
     echo idempotency: $idempotency_status
     echo final status: $final_status
