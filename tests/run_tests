@@ -38,9 +38,6 @@ done
 
 
 cleanup() {
-    # output to /dev/null to supress confusing message "Not logged in"
-    # when script exits before completing the login step.
-    docker logout > /dev/null
     [[ -n "$builddir" ]] && rm -rf $builddir
 }
 
