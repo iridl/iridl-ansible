@@ -1,34 +1,33 @@
 - hosts: dlservers
   vars:
-    # ansible_pipelining speeds things up, but according to the
-    # docs it conflicts with some uses of become. Everything is
-    # working ok so far; if it causes problems in the future, try
-    # disabling it for individual tasks that are problematic.
-    ansible_pipelining: true
-
     # Email address that users of your Data Library should write
     # to for help
     support_email: help@example.com
 
-    # Email addresses to which automated messages about system
-    # status will be sent
+    # Optional SMTP server in postfix config file format. If
+    # undefined, mail will be delivered locally.
+    # mail_relay: "[mail.example.com]:25"
+
+    # Email recipients to which automated messages about system status
+    # will be sent. If mail_relay is defined (see above) then these
+    # can be email addresses of the form user@example.com, otherwise
+    # they should be unix user names.
     admin_emails:
-      - joe.admin@example.com
-      - it_support@example.com
+      - johndoe
 
-    # SMTP server in postfix config file format
-    mail_relay: "[mail.example.com]:25"
+    # The server that hosts your dlentries and maproom repositories
+    git_host: bitbucket.org
 
-    # Replace with the URLs of your country-specific dlentries and
-    # maproom repositories. Here we are using anonymous access
-    # over HTTPS, but if your repositories require authentication,
-    # configure the access key in the secrets file and specify the
-    # repositories like this:
-    #
-    #    dlentries_repo: git@bitbucket.org:iridl/dlentries_mycountry.git
-    #    maproom_repo: git@bitbucket.org:iridl/maproom_mycountry.git
-    dlentries_repo: https://bitbucket.org/iridl/dlentries_testcountry.git
-    maproom_repo: https://bitbucket.org/iridl/maproom_testcountry.git
+    # The git host's ssh host key. Find this with the following
+    # command, substituting the name of your git host for
+    # bitbucket.org:
+    # ssh-keyscan bitbucket.org 2>/dev/null
+    # This is a public key, not a secret, so it's ok to store here.
+    git_host_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+
+    # Your country-specific dlentries and maproom repositories
+    dlentries_repo: git@{{git_host}}:iridl/dlentries_testcountry.git
+    maproom_repo: git@{{git_host}}:iridl/maproom_testcountry.git
 
     # Unix users that should be members of the datag group. User
     # accounts will be created if they don't already exist. Newly
@@ -37,16 +36,6 @@
     datag_users:
       # username: uid
       testuser: 1001
-
-    # Container version numbers for the various Data Library software
-    # packages. Do not use "latest", or you might find your software
-    # being updated when you don't expect it, potentially to a
-    # non-backwards-compatible version
-    ingrid_version: d250324
-    ingriddb_version: d13b453
-    maproom_base_version: ce2f974
-    maproom_dev_version: ce2f974
-    dlsquid_version: e16cb8b
 
   roles:
     - iridl.iridl.iridl

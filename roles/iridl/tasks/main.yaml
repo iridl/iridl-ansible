@@ -1,18 +1,6 @@
 #
 # General system settings
 #
-- name: disable selinux
-  selinux:
-    state: disabled
-  register: disable_selinux
-
-# Reboot to make the selinux state change. This has to happen before
-# we start the containers for the first time, because docker-compose
-# fails to restart services that were running before the state change.
-- name: reboot if necessary to change selinux state
-  reboot:
-  when: disable_selinux.reboot_required
-
 - name: enable EPEL yum repo
   yum:
     name: epel-release
@@ -258,39 +246,35 @@
     state: directory
     mode: 0700
 
-- block:
-    - name: add git host key to ssh_known_hosts
-      known_hosts:
-        name: "{{git_host}}"
-        # This is a public key, not a secret, so no need to encrypt it.
-        key: "{{git_host_key}}"
+- name: add git host key to ssh_known_hosts
+  known_hosts:
+    name: "{{git_host}}"
+    # This is a public key, not a secret, so no need to encrypt it.
+    key: "{{git_host_key}}"
 
-    - name: ssh access key directory
-      # let's keep all data library files together
-      file:
-        path: "{{dldir}}/ssh"
-        state: directory
-        mode: 0700
+- name: ssh access key directory
+  # let's keep all data library files together
+  file:
+    path: "{{dldir}}/ssh"
+    state: directory
+    mode: 0700
 
-    - set_fact:
-        git_key_file: "{{dldir}}/ssh/id_rsa-git"
+- set_fact:
+    git_key_file: "{{dldir}}/ssh/id_rsa-git"
 
-    - name: git ssh key
-      copy:
-        dest: "{{git_key_file}}"
-        content: "{{git_key}}"
-        mode: 0600
+- name: git ssh key
+  copy:
+    dest: "{{git_key_file}}"
+    content: "{{git_key}}"
+    mode: 0600
 
-    - name: ssh command for git
-      copy:
-        dest: "/usr/local/bin/ssh-git"
-        mode: 0744
-        content: |
-          #!/bin/sh
-          ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
-
-  # If we clone over anonymous HTTPS then no ssh key is required.
-  when: git_key is defined
+- name: ssh command for git
+  copy:
+    dest: "/usr/local/bin/ssh-git"
+    mode: 0744
+    content: |
+      #!/bin/sh
+      ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
 
 #
 # Scripts for managing data
@@ -434,15 +418,6 @@
 
 - meta: flush_handlers
 
-- name: verify that chronyd has synchronized with a time server
-  shell: chronyc sources | grep '^\^\*'
-  register: chronyc_result
-  retries: 6
-  until: chronyc_result is success
-  delay: 10
-  changed_when: no
-  check_mode: no # run even in check mode
-
 - name: service tests
   uri:
     url: http://{{dl_hostport}}{{item}}
@@ -486,3 +461,12 @@
   # Once we have a test db fixture, change the test to look for an actual table.
   failed_when: "'ERROR:  relation \"nosuchtable\" does not exist' not in result.content"
   check_mode: no
+
+- name: verify that chronyd has synchronized with a time server
+  shell: chronyc sources | grep '^\^\*'
+  register: chronyc_result
+  retries: 6
+  until: chronyc_result is success
+  delay: 10
+  changed_when: no
+  check_mode: no # run even in check mode

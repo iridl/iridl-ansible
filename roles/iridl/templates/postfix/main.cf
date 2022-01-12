@@ -9,7 +9,9 @@ inet_interfaces = localhost
 inet_protocols = all
 mydestination = $myhostname, localhost.$mydomain, localhost
 unknown_local_recipient_reject_code = 550
+{% if mail_relay is defined %}
 relayhost = {{ mail_relay }}
+{% endif %}
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 debug_peer_level = 2
