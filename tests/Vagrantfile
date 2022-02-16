@@ -5,8 +5,7 @@ $bootstrap = <<-EOF
 #!/bin/bash
 set -e
 
-yum install -y centos-release-ansible-29
-yum install -y ansible
+yum install -y git python3
 sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
 shutdown -r now
 EOF
