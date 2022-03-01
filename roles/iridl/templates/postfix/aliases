@@ -93,4 +93,7 @@ support:	postmaster
 decode:		root
 
 datag:          root
+
+{% if admin_emails | length > 0 %}
 root:		"{{ admin_emails | join(', ') }}"
+{% endif %}
