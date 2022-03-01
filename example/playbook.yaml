@@ -25,5 +25,6 @@
       # username: uid
       testuser: 1001
 
+  # Invokes the iridl ansible role. Don't modify this.
   roles:
     - iridl.iridl.iridl
