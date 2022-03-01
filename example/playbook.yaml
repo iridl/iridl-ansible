@@ -1,9 +1,5 @@
 - hosts: dlservers
   vars:
-    # Email address that users of your Data Library should write
-    # to for help
-    support_email: help@example.com
-
     # Optional SMTP server in postfix config file format. If
     # undefined, mail will be delivered locally.
     # mail_relay: "[mail.example.com]:25"
