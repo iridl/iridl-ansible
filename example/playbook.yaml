@@ -1,16 +1,5 @@
 - hosts: dlservers
   vars:
-    # Optional SMTP server in postfix config file format. If
-    # undefined, mail will be delivered locally.
-    # mail_relay: "[mail.example.com]:25"
-
-    # Email recipients to which automated messages about system status
-    # will be sent. If mail_relay is defined (see above) then these
-    # can be email addresses of the form user@example.com, otherwise
-    # they should be unix user names.
-    admin_emails:
-      - johndoe
-
     # The server that hosts your dlentries and maproom repositories
     git_host: bitbucket.org
 
