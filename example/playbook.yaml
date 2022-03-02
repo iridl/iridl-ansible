@@ -1,20 +1,5 @@
 - hosts: dlservers
   vars:
-    # Email address that users of your Data Library should write
-    # to for help
-    support_email: help@example.com
-
-    # Optional SMTP server in postfix config file format. If
-    # undefined, mail will be delivered locally.
-    # mail_relay: "[mail.example.com]:25"
-
-    # Email recipients to which automated messages about system status
-    # will be sent. If mail_relay is defined (see above) then these
-    # can be email addresses of the form user@example.com, otherwise
-    # they should be unix user names.
-    admin_emails:
-      - johndoe
-
     # The server that hosts your dlentries and maproom repositories
     git_host: bitbucket.org
 
@@ -25,7 +10,10 @@
     # This is a public key, not a secret, so it's ok to store here.
     git_host_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
 
-    # Your country-specific dlentries and maproom repositories
+    # Your country-specific dlentries and maproom repositories. These
+    # are git repositories that describe the content of your data
+    # library. They are typically created in collaboration with IRI
+    # staff.
     dlentries_repo: git@{{git_host}}:iridl/dlentries_testcountry.git
     maproom_repo: git@{{git_host}}:iridl/maproom_testcountry.git
 
@@ -37,5 +25,6 @@
       # username: uid
       testuser: 1001
 
+  # Invokes the iridl ansible role. Don't modify this.
   roles:
     - iridl.iridl.iridl

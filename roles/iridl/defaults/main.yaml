@@ -46,6 +46,19 @@ dataset_parent_dir: "{{data_mountpoint}}/datalib"
 # volume with multiple TB of space, and ideally not the root volume.
 docker_dir: "{{data_mountpoint}}/docker"
 
+# Email recipients to which cron job output and other automated system
+# status messages will be sent. If mail_relay (see below) is non-empty
+# then these can be email addresses of the form user@example.com,
+# otherwise they should be local unix user names. If left at the
+# default (empty list), messages will be sent to root.
+admin_emails: []
+
+# Optional SMTP server in postfix config file format. If set to null,
+# mail will be delivered locally.
+# mail_relay: "[mail.example.com]:25"
+mail_relay: null
+
+
 # Container version numbers for the various Data Library software
 # packages. Do not use "latest", or you might find your software
 # being updated when you don't expect it, potentially to a
