@@ -8,12 +8,12 @@ fail() {
 while [[ $# -gt 0 ]]; do
   case $1 in
     --build-classic)
-	BUILD_CLASSIC=YES
-	shift
-	;;
+        BUILD_CLASSIC=YES
+        shift
+        ;;
     *)
-	fail 1 "Unknown argument '$1'"
-	;;
+        fail 1 "Unknown argument '$1'"
+        ;;
   esac
 done
 
@@ -38,8 +38,8 @@ init_git() {
     git submodule update --init --recursive || fail $? "failed to update submodules"
 
     if [ ! -z "${clean}" ]; then
-	git clean -fdx || fail $? "git clean failed"
-	git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
+        git clean -fdx || fail $? "git clean failed"
+        git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
     fi
 }
 
@@ -72,8 +72,8 @@ init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} /usr/local/bin
 
 if [ ! -z "${BUILD_CLASSIC}" ]; then
     docker run --rm $interactive_args --user 0 \
-	   -v $PWD:/build/maproom iridl/maproom-dev:{{maproom_dev_version}} \
-	   ./build.sh utbuild.tag || fail $? "maproom build failed"
+           -v $PWD:/build/maproom iridl/maproom-dev:{{maproom_dev_version}} \
+           ./build.sh utbuild.tag || fail $? "maproom build failed"
 
     mkdir -p {{maproom_install_dir}} || fail $? "couldn't create install dir"
     cp -r ___build/* {{maproom_install_dir}} || fail $? "failed to install maprooms"
