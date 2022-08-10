@@ -246,35 +246,20 @@
     state: directory
     mode: 0700
 
-- name: add git host key to ssh_known_hosts
-  known_hosts:
-    name: "{{git_host}}"
-    # This is a public key, not a secret, so no need to encrypt it.
-    key: "{{git_host_key}}"
-
-- name: ssh access key directory
-  # let's keep all data library files together
-  file:
-    path: "{{dldir}}/ssh"
-    state: directory
-    mode: 0700
-
+#
+# set up git access keys
+#
 - set_fact:
-    git_key_file: "{{dldir}}/ssh/id_rsa-git"
+    git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
 
-- name: git ssh key
-  copy:
-    dest: "{{git_key_file}}"
-    content: "{{git_key}}"
-    mode: 0600
+- name: set up bitbucket access key
+  include_tasks: git_ssh.yaml
+  vars:
+    name: bitbucket
+    this_git_host: "{{git_host}}"
+    this_git_public_key: "{{git_host_key}}"
+    this_git_private_key: "{{git_key}}"
 
-- name: ssh command for git
-  copy:
-    dest: "/usr/local/bin/ssh-git"
-    mode: 0744
-    content: |
-      #!/bin/sh
-      ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
 
 #
 # Scripts for managing data
@@ -374,7 +359,7 @@
   file:
     path: "{{compose_project_dir}}"
     state: directory
-    
+
 - name: docker-compose.yaml
   template:
     src: docker-compose.yaml
