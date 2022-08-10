@@ -12,7 +12,7 @@
 
 - name: ssh command for git
   copy:
-    dest: "/usr/local/bin/ssh-git-{{name}}"
+    dest: "{{git_ssh_prefix}}{{name}}"
     mode: 0744
     content: |
       #!/bin/sh

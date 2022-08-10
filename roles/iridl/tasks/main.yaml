@@ -251,6 +251,7 @@
 #
 - set_fact:
     git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
+    git_ssh_prefix: "/usr/local/bin/ssh-git-"
 
 - name: set up bitbucket access key
   include_tasks: git_ssh.yaml

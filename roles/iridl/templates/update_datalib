@@ -55,7 +55,7 @@ fi
 ### dlentries
 
 if [[ ! -z "{{dlentries_repo}}" ]]; then
-    init_git {{dlentries_repo}} {{dlentries_dir}} {{dlentries_version}} /usr/local/bin/ssh-git
+    init_git {{dlentries_repo}} {{dlentries_dir}} {{dlentries_version}} {{git_ssh_prefix}}bitbucket
 fi
 
 ### python maproom
@@ -63,14 +63,14 @@ fi
 # only if we actually have a python maproom for this deployment
 {% if python_maproom_repo is defined %}
 init_git {{python_maproom_repo}} {python_maproom_src_dir}} \
-         {{python_maproom_version}} {{python_maproom_git_ssh}} clean
+         {{python_maproom_version}} {{git_ssh_prefix}}python_maproom clean
 
 docker build -t python_maproom:{{python_maproom_version}} .
 {% endif %}
 
 ### maproom
 
-init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} /usr/local/bin/ssh-git clean
+init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} {{git_ssh_prefix}}bitbucket clean
 
 if [ ! -z "${BUILD_CLASSIC}" ]; then
     docker run --rm $interactive_args --user 0 \
