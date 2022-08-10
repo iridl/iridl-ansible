@@ -17,6 +17,9 @@
     dlentries_repo: git@{{git_host}}:iridl/dlentries_testcountry.git
     maproom_repo: git@{{git_host}}:iridl/maproom_testcountry.git
 
+    # Python maproom code will only get inserted if this variable is set
+    python_maproom_repo: git@github.com:testcountry/python_maproom.git
+
     # Unix users that should be members of the datag group. User
     # accounts will be created if they don't already exist. Newly
     # created users won't be able to log in until an admin manually
