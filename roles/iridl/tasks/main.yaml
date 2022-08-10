@@ -265,7 +265,7 @@
   include_tasks: git_ssh.yaml
   vars:
     name: python_maproom
-    this_git_host: github.com
+    this_git_host: "{{python_maproom_git_host}}"
     this_git_public_key: "{{python_maproom_public_key}}"
     this_git_private_key: "{{python_maproom_private_key}}"
   when: python_maproom_repo is defined
