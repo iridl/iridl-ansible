@@ -60,11 +60,13 @@ fi
 
 ### python maproom
 
+# only if we actually have a python maproom for this deployment
+{% if python_maproom_repo is defined %}
 init_git {{python_maproom_repo}} {python_maproom_src_dir}} \
          {{python_maproom_version}} {{python_maproom_git_ssh}} clean
 
 docker build -t python_maproom:{{python_maproom_version}} .
-
+{% endif %}
 
 ### maproom
 
