@@ -29,8 +29,24 @@ init_git() {
     local version=$3
     export GIT_SSH=$4
 
-    mkdir -p $target
-    if [ ! -d $target/.git ]; then
+    # Check if $target is a valid clone of the right repo. If not, remove it.
+    if [[ -e $target ]]; then
+        if remotes=$(cd $target && git remote -v); then
+            # extract the remote url and compare it to $repo
+            echo $repo
+            echo "$repo"
+            remote=$(echo "$remotes" | grep -P '^origin\t.*\(fetch\)$' | awk '{print $2}') || fail
+            if [[ "$remote" != $repo ]]; then
+                # remote has changed; remove so we can reclone
+                rm -r $target || fail
+            fi
+        else
+            # $target is not a valid git repo. Remove it and start fresh.
+            rm -r $target || fail
+        fi
+    fi
+
+    if [[ ! -e $target ]]; then
         git clone --recursive $repo $target || fail $? "git clone failed"
     fi
 
