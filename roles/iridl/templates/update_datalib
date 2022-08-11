@@ -22,7 +22,6 @@ init_git() {
     local target=$2
     local version=$3
     export GIT_SSH=$4
-    local clean=$5
 
     mkdir -p $target
     if [ ! -d $target/.git ]; then
@@ -37,10 +36,9 @@ init_git() {
         fail $? "failed to checkout version $version"
     git submodule update --init --recursive || fail $? "failed to update submodules"
 
-    if [ ! -z "${clean}" ]; then
-        git clean -fdx || fail $? "git clean failed"
-        git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
-    fi
+
+    git clean -fdx || fail $? "git clean failed"
+    git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
 }
 
 if [[ $(id -u) != 0 ]]; then
@@ -63,14 +61,14 @@ fi
 # only if we actually have a python maproom for this deployment
 {% if python_maproom_repo is defined %}
 init_git {{python_maproom_repo}} {python_maproom_src_dir}} \
-         {{python_maproom_version}} {{git_ssh_prefix}}python_maproom clean
+         {{python_maproom_version}} {{git_ssh_prefix}}python_maproom
 
 docker build -t python_maproom:{{python_maproom_version}} .
 {% endif %}
 
 ### maproom
 
-init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} {{git_ssh_prefix}}bitbucket clean
+init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} {{git_ssh_prefix}}bitbucket
 
 if [ ! -z "${build_classic}" ]; then
     docker run --rm $interactive_args --user 0 \
