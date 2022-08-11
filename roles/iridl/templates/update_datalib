@@ -94,7 +94,7 @@ if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     docker-compose restart ingrid
     docker-compose restart maproom
     # in case one of the services was previously down, tell squid to check again.
-    docker-compose exec squid squid -k reconfigure
+    docker-compose exec -T squid squid -k reconfigure
 fi
 
 exit 0
