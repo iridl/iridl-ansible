@@ -34,7 +34,7 @@ init_git() {
         git clone --recursive $repo $target || fail $? "git clone failed"
     fi
 
-    cd $target || fail "failed to cd to target dir $target"
+    cd $target || fail $? "failed to cd to target dir $target"
 
     git fetch origin $version || fail $? "git fetch failed"
     git checkout -- . || fail $? "git checkout -- . failed"
