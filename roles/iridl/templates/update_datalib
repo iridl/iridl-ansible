@@ -8,7 +8,7 @@ fail() {
 while [[ $# -gt 0 ]]; do
   case $1 in
     --build-classic)
-        BUILD_CLASSIC=YES
+        build_classic=YES
         shift
         ;;
     *)
@@ -72,7 +72,7 @@ docker build -t python_maproom:{{python_maproom_version}} .
 
 init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} {{git_ssh_prefix}}bitbucket clean
 
-if [ ! -z "${BUILD_CLASSIC}" ]; then
+if [ ! -z "${build_classic}" ]; then
     docker run --rm $interactive_args --user 0 \
            -v $PWD:/build/maproom iridl/maproom-dev:{{maproom_dev_version}} \
            ./build.sh utbuild.tag || fail $? "maproom build failed"
