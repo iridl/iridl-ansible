@@ -40,12 +40,13 @@ services:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
 
 {% if python_maproom_repo is defined %}
-  python_maproom:
-    image: python_maproom:{{python_maproom_version}}
+  pymaproom:
+    image: "{{python_maproom_repo.name}}:{{python_maproom_repo.version}}"
     expose:
       - 8000
     restart: always
     volumes:
+      - "{{data_dir}}:{{data_dir}}:rslave,ro"
 {% endif %}
 
   postgres:

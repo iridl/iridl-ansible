@@ -13,6 +13,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     *)
         fail 1 "Unknown argument '$1'"
+        shift
         ;;
   esac
 done
@@ -52,23 +53,23 @@ fi
 
 ### dlentries
 
-if [[ ! -z "{{dlentries_repo}}" ]]; then
-    init_git {{dlentries_repo}} {{dlentries_dir}} {{dlentries_version}} {{git_ssh_prefix}}bitbucket
-fi
+{% if dlentries_repo is defined %}
+    init_git {{dlentries_repo.url}} {{dlentries_dir}} {{dlentries_repo.version}} {{git_ssh_prefix}}{{dlentries_repo.name}}
+{% endif %}
 
 ### python maproom
 
 # only if we actually have a python maproom for this deployment
 {% if python_maproom_repo is defined %}
-init_git {{python_maproom_repo}} {python_maproom_src_dir}} \
-         {{python_maproom_version}} {{git_ssh_prefix}}python_maproom
+init_git {{python_maproom_repo.url}} {{python_maproom_src_dir}} \
+         {{python_maproom_repo.version}} {{git_ssh_prefix}}{{python_maproom_repo.name}}
 
-docker build -t python_maproom:{{python_maproom_version}} .
+docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} .
 {% endif %}
 
 ### maproom
 
-init_git {{maproom_repo}} {{maproom_src_dir}} {{maproom_version}} {{git_ssh_prefix}}bitbucket
+init_git {{maproom_repo.url}} {{maproom_src_dir}} {{maproom_repo.version}} {{git_ssh_prefix}}{{maproom_repo.name}}
 
 if [ ! -z "${build_classic}" ]; then
     docker run --rm $interactive_args --user 0 \
@@ -82,6 +83,9 @@ fi
 # seemingly necessary to get updates to show up (at least immediately)
 if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     cd {{compose_project_dir}} || fail $? "failed to cd"
+
+    docker-compose up -d
+
     docker-compose restart ingrid
     docker-compose restart maproom
     # in case one of the services was previously down, tell squid to check again.

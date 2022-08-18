@@ -249,27 +249,21 @@
 #
 # set up git access keys
 #
+
+- name: ssh access key directory
+  # let's keep all data library files together
+  file:
+    path: "{{dldir}}/ssh"
+    state: directory
+    mode: 0700
+
 - set_fact:
     git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
     git_ssh_prefix: "/usr/local/bin/ssh-git-"
 
-- name: set up bitbucket access key
+- name: set up git access keys
   include_tasks: git_ssh.yaml
-  vars:
-    name: bitbucket
-    this_git_host: "{{git_host}}"
-    this_git_public_key: "{{git_host_key}}"
-    this_git_private_key: "{{git_key}}"
-
-- name: set up python maproom access key
-  include_tasks: git_ssh.yaml
-  vars:
-    name: python_maproom
-    this_git_host: "{{python_maproom_git_host}}"
-    this_git_public_key: "{{python_maproom_public_key}}"
-    this_git_private_key: "{{python_maproom_private_key}}"
-  when: python_maproom_repo is defined
-
+  loop: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is not none else []) }}"
 
 #
 # Scripts for managing data
@@ -291,7 +285,7 @@
     mode: 0400
 
 - name: run update script
-  command: "bash -x {{update_script}} --notty"
+  command: "bash -x {{update_script}} --build-classic"
   when: run_update_script | bool
 
 - name: sql import dir
@@ -382,6 +376,27 @@
     remove_orphans: yes
     debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
+    services:
+      - squid
+      - maproom
+      - postgres
+      - ingrid
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+  register: docker_compose_result
+
+- debug:
+    msg: "{{docker_compose_result.actions}}"
+
+- name: update docker-compose state for python_maproom
+  docker_compose:
+    project_src: "{{compose_project_dir}}"
+    pull: no
+    remove_orphans: yes
+    debug: yes # to get info on what changed (module doesn't support --diff)
+    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
+    services:
+      - pymaproom
   vars:
     ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
@@ -412,6 +427,24 @@
 # service and then removes the file.
 
 - meta: flush_handlers
+
+- name: verify that python_maproom is running
+  uri:
+    url: http://{{dl_hostport}}/python_maproom/health
+    headers:
+      Cache-Control: no-cache
+    body_format: json
+    body:
+      status: healthy
+      name: python_maproom
+  retries: 5
+  delay: 1
+  register: python_maproom_result
+  until: python_maproom_result is success
+  delegate_to: localhost
+  become: false
+  changed_when: no
+  check_mode: no
 
 - name: service tests
   uri:
