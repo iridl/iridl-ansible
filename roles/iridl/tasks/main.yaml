@@ -370,7 +370,7 @@
     src: docker-compose.yaml
     dest: "{{compose_project_dir}}/docker-compose.yaml"
 
-- name: update docker-compose state
+- name: update docker-compose state for services pulled from registries
   docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: yes
@@ -389,7 +389,7 @@
 - debug:
     msg: "{{docker_compose_result.actions}}"
 
-- name: update docker-compose state for python_maproom
+- name: update docker-compose state for locally built services
   docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: no
