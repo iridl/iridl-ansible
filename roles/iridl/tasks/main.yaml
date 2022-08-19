@@ -428,24 +428,6 @@
 
 - meta: flush_handlers
 
-- name: verify that python_maproom is running
-  uri:
-    url: http://{{dl_hostport}}/python_maproom/health
-    headers:
-      Cache-Control: no-cache
-    body_format: json
-    body:
-      status: healthy
-      name: python_maproom
-  retries: 5
-  delay: 1
-  register: python_maproom_result
-  until: python_maproom_result is success
-  delegate_to: localhost
-  become: false
-  changed_when: no
-  check_mode: no
-
 - name: service tests
   uri:
     url: http://{{dl_hostport}}{{item}}
@@ -488,6 +470,21 @@
   # If we can't talk to the db then we get a different error message.
   # Once we have a test db fixture, change the test to look for an actual table.
   failed_when: "'ERROR:  relation \"nosuchtable\" does not exist' not in result.content"
+  check_mode: no
+
+- name: verify that python_maproom is running
+  uri:
+    url: http://{{dl_hostport}}/python_maproom/health
+    headers:
+      Cache-Control: no-cache
+    return_content: yes
+  retries: 5
+  delay: 1
+  register: result
+  until: result.content_type == "application/json" and result.json.status == "healthy" and result.json.name == "python_maproom"
+  delegate_to: localhost
+  become: false
+  changed_when: no
   check_mode: no
 
 - name: verify that chronyd has synchronized with a time server
