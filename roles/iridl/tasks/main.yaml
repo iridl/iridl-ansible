@@ -246,11 +246,27 @@
     state: directory
     mode: 0700
 
-- name: add git host key to ssh_known_hosts
+# The git hosts' ssh host key. Find this with the following
+# command, substituting the name of your git host for
+# bitbucket.org:
+# ssh-keyscan bitbucket.org 2>/dev/null
+# This is a public key, not a secret, so it's ok to store here.
+
+- name: add host keys to ssh_known_hosts for git repositories
   known_hosts:
-    name: "{{git_host}}"
-    # This is a public key, not a secret, so no need to encrypt it.
-    key: "{{git_host_key}}"
+    name: "{{item.host}}"
+    key: "{{item.key}}"
+  # These are public (host) keys, not secrets, so no need to encrypt them.
+  with_items:
+    - host: bitbucket.org
+      key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+
+    - host: github.com
+      key: github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
+
+#
+# set up git access keys
+#
 
 - name: ssh access key directory
   # let's keep all data library files together
@@ -260,21 +276,13 @@
     mode: 0700
 
 - set_fact:
-    git_key_file: "{{dldir}}/ssh/id_rsa-git"
+    git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
+    git_ssh_prefix: "/usr/local/bin/ssh-git-"
 
-- name: git ssh key
-  copy:
-    dest: "{{git_key_file}}"
-    content: "{{git_key}}"
-    mode: 0600
-
-- name: ssh command for git
-  copy:
-    dest: "/usr/local/bin/ssh-git"
-    mode: 0744
-    content: |
-      #!/bin/sh
-      ssh -i {{git_key_file}} -o IdentitiesOnly=yes "$@"
+- name: set up git access keys
+  include_tasks: git_ssh.yaml
+  no_log: true
+  loop: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is defined else []) }}"
 
 #
 # Scripts for managing data
@@ -296,7 +304,7 @@
     mode: 0400
 
 - name: run update script
-  command: "bash -x {{update_script}} --notty"
+  command: "bash -x {{update_script}} --build-classic"
   when: run_update_script | bool
 
 - name: sql import dir
@@ -374,25 +382,58 @@
   file:
     path: "{{compose_project_dir}}"
     state: directory
-    
+
 - name: docker-compose.yaml
   template:
     src: docker-compose.yaml
     dest: "{{compose_project_dir}}/docker-compose.yaml"
 
-- name: update docker-compose state
+- name: update docker-compose state for services pulled from registries
   docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: yes
     remove_orphans: yes
     debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
+    services:
+      - squid
+      - maproom
+      - postgres
+      - ingrid
   vars:
     ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
+
+- name: update docker-compose state for locally built services
+  docker_compose:
+    project_src: "{{compose_project_dir}}"
+    pull: no
+    remove_orphans: yes
+    debug: yes # to get info on what changed (module doesn't support --diff)
+    services:
+      - pymaproom
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+  register: docker_compose_result
+  when: python_maproom_repo is defined
+
+- debug:
+    msg: "{{docker_compose_result.actions}}"
+  when: python_maproom_repo is defined
+
+- name: clean up files from old locations
+  file:
+    path: "{{item}}"
+    state: absent
+  with_items:
+    - "{{dldir}}/ssh/id_rsa-git"
+    - /usr/local/bin/ssh-git
+    - "{{build_dir}}/maproom_src"
+    - "{{build_dir}}/python_maproom_src"
+
 
 # TODO need smarter criteria for pruning old images; this prunes the
 # latest maproom-dev, which then gets re-downloaded on every maproom
@@ -461,6 +502,22 @@
   # Once we have a test db fixture, change the test to look for an actual table.
   failed_when: "'ERROR:  relation \"nosuchtable\" does not exist' not in result.content"
   check_mode: no
+
+- name: verify that python_maproom is running
+  uri:
+    url: http://{{dl_hostport}}/python_maproom/health
+    headers:
+      Cache-Control: no-cache
+    return_content: yes
+  retries: 5
+  delay: 1
+  register: result
+  until: result.content_type == "application/json" and result.json.status == "healthy" and result.json.name == "python_maproom"
+  delegate_to: localhost
+  become: false
+  changed_when: no
+  check_mode: no
+  when: python_maproom_repo is defined
 
 - name: verify that chronyd has synchronized with a time server
   shell: chronyc sources | grep '^\^\*'

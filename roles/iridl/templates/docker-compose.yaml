@@ -33,11 +33,23 @@ services:
 
   maproom:
     image: iridl/maproom-base:{{maproom_base_version}}
+    user: "{{maproom_uid}}:{{maproom_uid}}"
     expose:
       - 8000
     restart: always
     volumes:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
+
+{% if python_maproom_repo is defined %}
+  pymaproom:
+    image: "{{python_maproom_repo.name}}:{{python_maproom_repo.version}}"
+    user: "{{pymaproom_uid}}:{{pymaproom_uid}}"
+    expose:
+      - 8000
+    restart: always
+    volumes:
+      - "{{data_dir}}:{{data_dir}}:rslave,ro"
+{% endif %}
 
   postgres:
     image: iridl/ingriddb:{{ingriddb_version}}

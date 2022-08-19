@@ -1,21 +1,31 @@
 - hosts: dlservers
   vars:
-    # The server that hosts your dlentries and maproom repositories
-    git_host: bitbucket.org
-
-    # The git host's ssh host key. Find this with the following
-    # command, substituting the name of your git host for
-    # bitbucket.org:
-    # ssh-keyscan bitbucket.org 2>/dev/null
-    # This is a public key, not a secret, so it's ok to store here.
-    git_host_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
-
     # Your country-specific dlentries and maproom repositories. These
     # are git repositories that describe the content of your data
     # library. They are typically created in collaboration with IRI
     # staff.
-    dlentries_repo: git@{{git_host}}:iridl/dlentries_testcountry.git
-    maproom_repo: git@{{git_host}}:iridl/maproom_testcountry.git
+    dlentries_repo:
+      name: dlentries
+      host: bitbucket.org
+      url: git@bitbucket.org:iridl/dlentries_testcountry.git
+      version: master
+      private_key: "{{bitbucket_private_key}}"
+
+    maproom_repo:
+      name: maproom
+      host: bitbucket.org
+      url: git@bitbucket.org:iridl/maproom_testcountry.git
+      version: master
+      private_key: "{{bitbucket_private_key}}"
+
+    # Python maproom code will only get inserted if this variable is set
+    python_maproom_repo:
+      name: python_maproom
+      host: github.com
+      url: git@github.com:iridl/python_maproom_testcountry.git
+      version: main
+      private_key: "{{python_maproom_private_key}}"
+
 
     # Unix users that should be members of the datag group. User
     # accounts will be created if they don't already exist. Newly
