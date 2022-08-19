@@ -395,7 +395,6 @@
     pull: no
     remove_orphans: yes
     debug: yes # to get info on what changed (module doesn't support --diff)
-    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
     services:
       - pymaproom
   vars:
