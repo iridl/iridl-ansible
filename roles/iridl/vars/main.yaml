@@ -14,4 +14,7 @@ fbfmaproom_uid: 48
 datag_uid: 4031
 ingrid_uid: 30001
 
+maproom_uid: 48
+pymaproom_uid: 48
+
 ingrid_cache_target: /ingrid-cache

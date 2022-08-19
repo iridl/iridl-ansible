@@ -1,9 +1,3 @@
-- name: add git host key to ssh_known_hosts
-  known_hosts:
-    name: "{{item.host}}"
-    # This is a public (host) key, not a secret, so no need to encrypt it.
-    key: "{{item.host_key}}"
-
 - name: git ssh key
   copy:
     dest: "{{git_key_file_prefix}}{{item.name}}"
