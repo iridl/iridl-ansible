@@ -64,7 +64,7 @@ fi
 init_git {{python_maproom_repo.url}} {{python_maproom_src_dir}} \
          {{python_maproom_repo.version}} {{git_ssh_prefix}}{{python_maproom_repo.name}}
 
-docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} .
+docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} .  || fail $? "python maproom build failed"
 {% endif %}
 
 ### maproom
