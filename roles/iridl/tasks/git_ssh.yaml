@@ -1,8 +1,8 @@
-# - name: add git host key to ssh_known_hosts
-#   known_hosts:
-#     name: "{{item.host}}"
-#     # This is a public key, not a secret, so no need to encrypt it.
-#     key: "{{item.public_key}}"
+- name: add git host key to ssh_known_hosts
+  known_hosts:
+    name: "{{item.host}}"
+    # This is a public (host) key, not a secret, so no need to encrypt it.
+    key: "{{item.host_key}}"
 
 - name: git ssh key
   copy:
@@ -10,10 +10,11 @@
     content: "{{item.private_key}}"
     mode: 0600
 
+
 - name: ssh command for git
   copy:
     dest: "{{git_ssh_prefix}}{{item.name}}"
     mode: 0744
     content: |
       #!/bin/sh
-      ssh -i {{git_key_file_prefix}}{{item.name}} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$@"
+      ssh -i {{git_key_file_prefix}}{{item.name}} -o IdentitiesOnly=yes "$@"

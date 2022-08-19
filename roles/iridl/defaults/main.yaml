@@ -60,6 +60,6 @@ mail_relay: null
 # non-backwards-compatible version
 ingrid_version: d250324
 ingriddb_version: d13b453
-maproom_base_version: ce2f974
-maproom_dev_version: 316f8da
+maproom_base_version: 3450dbf
+maproom_dev_version: 3450dbf
 dlsquid_version: de6ed54

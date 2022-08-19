@@ -5,7 +5,7 @@
     # bitbucket.org:
     # ssh-keyscan bitbucket.org 2>/dev/null
     # This is a public key, not a secret, so it's ok to store here.
-    bitbucket_public_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
+    bitbucket_host_key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
 
     # Your country-specific dlentries and maproom repositories. These
     # are git repositories that describe the content of your data
@@ -16,7 +16,7 @@
       host: bitbucket.org
       url: git@bitbucket.org:iridl/dlentries_testcountry.git
       version: master
-      public_key: "{{bitbucket_public_key}}"
+      host_key: "{{bitbucket_host_key}}"
       private_key: "{{bitbucket_private_key}}"
 
     maproom_repo:
@@ -24,7 +24,7 @@
       host: bitbucket.org
       url: git@bitbucket.org:iridl/maproom_testcountry.git
       version: master
-      public_key: "{{bitbucket_public_key}}"
+      host_key: "{{bitbucket_host_key}}"
       private_key: "{{bitbucket_private_key}}"
 
     # Python maproom code will only get inserted if this variable is set
@@ -33,8 +33,7 @@
       host: github.com
       url: git@github.com:iridl/python_maproom_testcountry.git
       version: main
-      # public_key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILFJIPKYV5tkaf6/1AZDb7fElOzeb8LU+NF0e1LkctlD
-      public_key: github.com SHA256:4bZwoOKVpxXy0750DJT4HLM6W2witf3Ef7b8BVrTj18
+      host_key: github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
       private_key: "{{python_maproom_private_key}}"
 
 
