@@ -10,19 +10,6 @@ fail() {
     exit $status
 }
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --build-classic)
-        build_classic=YES
-        shift
-        ;;
-    *)
-        fail 1 "Unknown argument '$1'"
-        shift
-        ;;
-  esac
-done
-
 init_git() {
     local repo=$1
     local target=$2
@@ -60,6 +47,19 @@ init_git() {
     git clean -fdx || fail $? "git clean failed"
     git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
 }
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --build-classic)
+        build_classic=YES
+        shift
+        ;;
+    *)
+        fail 1 "Unknown argument '$1'"
+        shift
+        ;;
+  esac
+done
 
 if [[ $(id -u) != 0 ]]; then
     fail 1 "This script should be run with sudo."
