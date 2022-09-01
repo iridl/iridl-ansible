@@ -33,8 +33,6 @@ init_git() {
     if [[ -e $target ]]; then
         if remotes=$(cd $target && git remote -v); then
             # extract the remote url and compare it to $repo
-            echo $repo
-            echo "$repo"
             remote=$(echo "$remotes" | grep -P '^origin\t.*\(fetch\)$' | awk '{print $2}') || fail
             if [[ "$remote" != $repo ]]; then
                 # remote has changed; remove so we can reclone
