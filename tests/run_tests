@@ -124,6 +124,9 @@ _up() {
         echo VM failed to come up
         return 1
     fi
+    # Update shared folder. Docs say this happens automatically, but
+    # it doesn't. Maybe my version of vagrant is too old.
+    vagrant rsync
 }
 
 _playbook() {

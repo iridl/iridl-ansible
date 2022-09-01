@@ -1,8 +1,51 @@
 #!/usr/bin/env bash
 
 fail() {
+    local status=$1
+    # don't accidentally return success code
+    if [[ $((status)) -eq 0 ]]; then
+        status=1
+    fi
     echo $2 >&2
-    exit $1
+    exit $status
+}
+
+init_git() {
+    local repo=$1
+    local target=$2
+    local version=$3
+    export GIT_SSH=$4
+
+    # Check if $target is a valid clone of the right repo. If not, remove it.
+    if [[ -e $target ]]; then
+        if remotes=$(cd $target && git remote -v); then
+            # extract the remote url and compare it to $repo
+            remote=$(echo "$remotes" | grep -P '^origin\t.*\(fetch\)$' | awk '{print $2}') || fail
+            if [[ "$remote" != $repo ]]; then
+                # remote has changed; remove so we can reclone
+                rm -r $target || fail
+            fi
+        else
+            # $target is not a valid git repo. Remove it and start fresh.
+            rm -r $target || fail
+        fi
+    fi
+
+    if [[ ! -e $target ]]; then
+        git clone --recursive $repo $target || fail $? "git clone failed"
+    fi
+
+    cd $target || fail $? "failed to cd to target dir $target"
+
+    git fetch origin $version || fail $? "git fetch failed"
+    git checkout -- . || fail $? "git checkout -- . failed"
+    git -c advice.detachedHead=false checkout FETCH_HEAD || \
+        fail $? "failed to checkout version $version"
+    git submodule update --init --recursive || fail $? "failed to update submodules"
+
+
+    git clean -fdx || fail $? "git clean failed"
+    git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -17,30 +60,6 @@ while [[ $# -gt 0 ]]; do
         ;;
   esac
 done
-
-init_git() {
-    local repo=$1
-    local target=$2
-    local version=$3
-    export GIT_SSH=$4
-
-    mkdir -p $target
-    if [ ! -d $target/.git ]; then
-        git clone --recursive $repo $target || fail $? "git clone failed"
-    fi
-
-    cd $target || fail "failed to cd to target dir $target"
-
-    git fetch origin $version || fail $? "git fetch failed"
-    git checkout -- . || fail $? "git checkout -- . failed"
-    git -c advice.detachedHead=false checkout FETCH_HEAD || \
-        fail $? "failed to checkout version $version"
-    git submodule update --init --recursive || fail $? "failed to update submodules"
-
-
-    git clean -fdx || fail $? "git clean failed"
-    git submodule foreach --recursive git clean -fdx || fail $? "submodule clean failed"
-}
 
 if [[ $(id -u) != 0 ]]; then
     fail 1 "This script should be run with sudo."
@@ -89,7 +108,7 @@ if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     docker-compose restart ingrid
     docker-compose restart maproom
     # in case one of the services was previously down, tell squid to check again.
-    docker-compose exec squid squid -k reconfigure
+    docker-compose exec -T squid squid -k reconfigure
 fi
 
 exit 0
