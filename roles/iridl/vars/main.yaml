@@ -9,6 +9,7 @@ maproom_src_dir: "{{build_dir}}/maproom"
 maproom_install_dir: "{{dldir}}/maproom"
 compose_project_dir: "{{dldir}}"
 python_maproom_src_dir: "{{build_dir}}/python_maproom"
+python_maproom_data_dir: "{{data_dir}}/python_maproom"
 
 fbfmaproom_uid: 48
 datag_uid: 4031
