@@ -3,6 +3,7 @@
     dest: "{{git_key_file_prefix}}{{item.name}}"
     content: "{{item.private_key}}"
     mode: 0600
+  diff: no
 
 
 - name: ssh command for git
