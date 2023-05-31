@@ -38,9 +38,9 @@ init_git() {
     cd $target || fail $? "failed to cd to target dir $target"
 
     git fetch origin $version || fail $? "git fetch failed"
-    git checkout -- . || fail $? "git checkout -- . failed"
     git -c advice.detachedHead=false checkout FETCH_HEAD || \
         fail $? "failed to checkout version $version"
+    git checkout -- . || fail $? "git checkout -- . failed"
     git submodule update --init --recursive || fail $? "failed to update submodules"
 
 
