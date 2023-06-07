@@ -1,19 +1,11 @@
 \documentclass{article}
 
 \begin{document}
-redirectport is the optional specification of the port to redirect to.
-The default value is the port the server is running on.
-
-In this case, if the port is less than 80, I redirect to 80, otherwise
-I use it (so my experimental version can run on high ports and
-redirect to themselves, the production version redirects to the cache).
 \begin{ingrid}
-%/bindhost (localhost) def
 /redirectport {
-WWWinfo /port known
-{WWWinfo .port dup 85 lt { pop 80} if}
-{80} ifelse
-} def
+  WWWinfo .Host (:) search
+  { pop pop cvi } { pop 80 } ifelse
+}
 /donttrust true  def
 \end{ingrid}
 standardTrailer is the bottom of most of the html pages.  It should
