@@ -51,6 +51,17 @@ services:
       - "{{data_dir}}:{{data_dir}}:rslave,ro"
 {% endif %}
 
+{% if fbfmaproom_repo is defined %}
+  fbfmaproom:
+    image: "{{fbfmaproom_repo.name}}:{{fbfmaproom_repo.version}}"
+    user: "{{fbfmaproom_uid}}:{{fbfmaproom_uid}}"
+    expose:
+      - 8000
+    restart: always
+    volumes:
+      - "{{fbf_data_dir}}:{{fbf_data_dir}}:rslave,ro"
+{% endif %}
+
   postgres:
     image: iridl/ingriddb:{{ingriddb_version}}
     expose:

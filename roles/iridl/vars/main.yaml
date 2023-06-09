@@ -1,5 +1,6 @@
 dl_homes_dir: "{{dataset_parent_dir}}/home"
 data_dir: "{{dataset_parent_dir}}/data"
+fbf_data_dir: "{{dataset_parent_dir}}/fbf"
 sql_dir: "{{dataset_parent_dir}}/sql"
 dlentries_dir: "{{dldir}}/dlentries"
 ingrid_config_dir: "{{dldir}}/ingrid"
@@ -8,6 +9,7 @@ build_dir: "{{dldir}}/build"
 maproom_src_dir: "{{build_dir}}/maproom"
 maproom_install_dir: "{{dldir}}/maproom"
 compose_project_dir: "{{dldir}}"
+fbfmaproom_src_dir: "{{build_dir}}/fbfmaproom"
 python_maproom_src_dir: "{{build_dir}}/python_maproom"
 
 fbfmaproom_uid: 48
