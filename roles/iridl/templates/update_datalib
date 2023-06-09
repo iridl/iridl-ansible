@@ -86,6 +86,16 @@ init_git {{python_maproom_repo.url}} {{python_maproom_src_dir}} \
 docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} . || fail $? "python maproom build failed"
 {% endif %}
 
+### fbfmaproom
+
+# only if we actually have a fbfmaproom for this deployment
+{% if fbfmaproom_repo is defined %}
+init_git {{fbfmaproom_repo.url}} {{fbfmaproom_src_dir}} \
+         {{fbfmaproom_repo.version}} {{git_ssh_prefix}}{{fbfmaproom_repo.name}}
+
+docker build -t {{fbfmaproom_repo.name}}:{{fbfmaproom_repo.version}} . || fail $? "fbfmaproom build failed"
+{% endif %}
+
 ### maproom
 
 init_git {{maproom_repo.url}} {{maproom_src_dir}} {{maproom_repo.version}} {{git_ssh_prefix}}{{maproom_repo.name}}
