@@ -84,6 +84,14 @@
     group: root
     mode: u=rwx,g=rx,o=rx
 
+- name: fbf data dir
+  file:
+    path: "{{fbf_data_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+    mode: u=rwx,g=rwxs,o=rx
+
 - name: data dir
   file:
     path: "{{data_dir}}"
