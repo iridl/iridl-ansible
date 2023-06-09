@@ -127,7 +127,9 @@ if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     # update fbf data if fbfmaproom is defined, now that our subnet is running
     if [ ! -z "${update_fbf}" ]; then
     {% if fbfmaproom_repo is defined %}
-        docker-compose exec fbfmaproom /usr/local/bin/fbf_update_data || fail $? "fbf data update failed"
+        docker run -t {{fbfmaproom_repo.name}}:{{fbfmaproom_repo.version}} \
+          --mount type=volume,source=datalib_fbf-data,target={{fbf_data_dir}} \
+          --entrypoint /usr/local/bin/fbf_update_data || fail $? "fbf data update failed"
     {% else %}
         echo "The FBF Maproom is not installed on this machine. Ignoring --update-fbf option" >&2
     {% endif %}

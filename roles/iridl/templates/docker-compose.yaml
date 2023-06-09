@@ -59,7 +59,10 @@ services:
       - 8000
     restart: always
     volumes:
-      - "{{fbf_data_dir}}:{{fbf_data_dir}}:rshared,rw"
+      - type: volume
+        source: fbf-data
+        target: "{{fbf_data_dir}}"
+        read_only: true
 {% endif %}
 
   postgres:
@@ -99,6 +102,7 @@ services:
         read_only: false
 
 volumes:
+  fbf-data:
   ingriddb:
   ingrid-tmp:
   ingrid-cache:
