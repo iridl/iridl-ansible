@@ -1,5 +1,6 @@
 dl_homes_dir: "{{dataset_parent_dir}}/home"
 data_dir: "{{dataset_parent_dir}}/data"
+fbf_data_dir: "{{dataset_parent_dir}}/fbf"
 sql_dir: "{{dataset_parent_dir}}/sql"
 dlentries_dir: "{{dldir}}/dlentries"
 ingrid_config_dir: "{{dldir}}/ingrid"

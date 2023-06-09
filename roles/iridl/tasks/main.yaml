@@ -311,7 +311,7 @@
     dest: /etc/sudoers.d/datag_update
     mode: 0400
 
-- name: run update script
+- name: run update script # add update-fbf option later
   command: "bash -x {{update_script}} --build-classic"
   when: run_update_script | bool
   register: update_script
