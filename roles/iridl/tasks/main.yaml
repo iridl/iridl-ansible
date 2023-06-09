@@ -290,7 +290,7 @@
 - name: set up git access keys
   include_tasks: git_ssh.yaml
   no_log: true
-  loop: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is defined else []) }}"
+  loop: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is defined else [])  + ([ fbfmaproom_repo ] if fbfmaproom_repo is defined else []) }}"
 
 #
 # Scripts for managing data
