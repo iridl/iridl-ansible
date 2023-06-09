@@ -59,7 +59,7 @@ services:
       - 8000
     restart: always
     volumes:
-      - "{{fbf_data_dir}}:{{fbf_data_dir}}:rslave,ro"
+      - "{{fbf_data_dir}}:{{fbf_data_dir}}:rslave,rw"
 {% endif %}
 
   postgres:
