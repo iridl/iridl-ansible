@@ -225,9 +225,7 @@
   template:
     src: squid.conf
     dest: "{{squid_config_dir}}/squid.conf"
-  vars:
-    dl_hostport_regex: "{{ dl_hostport | replace('.', '\\.') }}"
-  notify: reconfigure squid
+  notify: restart squid
 
 
 #
