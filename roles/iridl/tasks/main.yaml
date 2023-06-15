@@ -476,7 +476,7 @@
 
 - name: service tests
   uri:
-    url: http://{{dl_hostport}}{{item}}
+    url: http://{{test_host}}:{{test_port}}{{item}}
     headers:
       Cache-Control: no-cache # force squid to talk to the backend
   retries: 5
@@ -503,7 +503,7 @@
 
 - name: verify that ingrid can talk to db
   uri:
-    url: http://{{dl_hostport}}/IRIDB/(select%20count(*)%20from%20nosuchtable)/openquery/
+    url: http://{{test_host}}:{{test_port}}/IRIDB/(select%20count(*)%20from%20nosuchtable)/openquery/
     headers:
       Cache-Control: no-cache
     return_content: yes
@@ -520,7 +520,7 @@
 
 - name: verify that python_maproom is running
   uri:
-    url: http://{{dl_hostport}}/python_maproom/health
+    url: http://{{test_host}}:{{test_port}}/python_maproom/health
     headers:
       Cache-Control: no-cache
     return_content: yes
