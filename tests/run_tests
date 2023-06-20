@@ -151,7 +151,7 @@ _playbook() {
 }
 
 cd $(dirname $0) || fail
-mode=host
+mode=guest
 while (( $# )); do
     echo $1
     case $1 in

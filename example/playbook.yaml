@@ -35,6 +35,14 @@
       # username: uid
       testuser: 1001
 
+    # Host names and/or IP addresses that will be used to access the
+    # server. If your server has multiple IP addresses (e.g. private
+    # and public), list them all here. Must include {{test_host}} or
+    # else the ansible tests will fail.
+    dl_hosts:
+      - "{{test_host}}"
+      - localhost
+
   # Invokes the iridl ansible role. Don't modify this.
   roles:
     - iridl.iridl.iridl
