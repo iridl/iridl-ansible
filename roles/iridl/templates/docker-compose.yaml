@@ -3,8 +3,8 @@ services:
   squid:
     image: iridl/dlsquid:{{dlsquid_version}}
     ports:
-      - 80:80
-      - 443:443
+      - "{{dl_http_port}}:80"
+      - "{{dl_https_port}}:443"
     expose:
       - 3128
     restart: always
