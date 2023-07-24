@@ -22,13 +22,17 @@ docker_max_concurrent_downloads: 3
 # when updating the configuration of an existing installation.
 run_update_script: no
 
+# External ports that squid should listen on.
+dl_http_port: "80"
+dl_https_port: "443"
+
 # The host and port that ansible tests will attempt to connect
 # to. Usually the host is the same as the one ansible connects to, so
 # you can probably leave this set to the default. If there is port
 # forwarding involved, as when testing in Vagrant, you will need to
 # override the default port.
 test_host: "{{ansible_host}}"
-test_port: "80"
+test_port: "{{dl_http_port}}"
 
 # The mount point of a large disk volume (typically multiple TB). The
 # base of defaults for other directories defined below.
