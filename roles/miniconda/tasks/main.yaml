@@ -1,0 +1,11 @@
+- name: miniconda installer
+  get_url:
+    url: https://repo.anaconda.com/miniconda/{{miniconda_installer_filename}}
+    dest: "{{miniconda_installer_path}}"
+
+- name: miniconda
+  shell: "bash {{miniconda_installer_path}} -b -p {{miniconda_path}}"
+  args:
+    creates:  "{{miniconda_path}}/bin/conda"
+
+

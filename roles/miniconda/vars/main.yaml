@@ -1,0 +1,3 @@
+miniconda_installer_filename: Miniconda3-{{miniconda_version}}-Linux-x86_64.sh
+miniconda_installer_path: "{{dldir}}/{{miniconda_installer_filename}}"
+miniconda_path: "{{dldir}}/miniconda3"
