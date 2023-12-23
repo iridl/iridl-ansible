@@ -8,4 +8,22 @@
   args:
     creates:  "{{miniconda_path}}/bin/conda"
 
+- name: conda envs dir
+  file:
+    path: "{{conda_envs_dir}}"
+    state: directory
 
+- name: condarun script
+  copy:
+    dest: "{{conda_envs_dir}}/condarun"
+    mode: "u=rwx,g=rx,o=rx"
+    content: |
+      #!/bin/bash
+      set -e
+
+      env=$1
+      shift
+
+      . /etc/profile.d/conda.sh
+      conda activate "$env"
+      python "$@"
