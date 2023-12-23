@@ -1,12 +1,23 @@
-- name: miniconda installer
-  get_url:
-    url: https://repo.anaconda.com/miniconda/{{miniconda_installer_filename}}
-    dest: "{{miniconda_installer_path}}"
+- name: check for conda
+  stat:
+    path: "{{miniconda_path}}/bin/conda"
+  register: conda_stat
 
-- name: miniconda
-  shell: "bash {{miniconda_installer_path}} -b -p {{miniconda_path}}"
-  args:
-    creates:  "{{miniconda_path}}/bin/conda"
+- block:
+    - name: miniconda installer
+      get_url:
+        url: https://repo.anaconda.com/miniconda/{{miniconda_installer_filename}}
+        dest: /tmp/{{miniconda_installer_filename}}
+
+    - name: miniconda
+      shell: "bash /tmp/{{miniconda_installer_filename}} -b -p {{miniconda_path}}"
+
+    - name: clean up miniconda installer
+      file:
+        path: /tmp/{{miniconda_installer_filename}}
+        state: absent
+
+  when: not conda_stat.stat.exists
 
 - name: conda envs dir
   file:
