@@ -1,9 +1,9 @@
 - name: conda environment lockfile {{conda_env_file}}
   copy:
     src: "{{conda_env_file}}"
-    dest: "{{dldir}}/{{conda_env_name}}-conda-linux-64.lock"
+    dest: "{{conda_envs_dir}}/{{conda_env_name}}-conda-linux-64.lock"
 
 - name: conda environment {{conda_env_name}}
-  shell: ". {{miniconda_path}}/etc/profile.d/conda.sh && conda create -n {{conda_env_name}} --file {{dldir}}/{{conda_env_name}}-conda-linux-64.lock"
+  shell: ". {{miniconda_path}}/etc/profile.d/conda.sh && conda create -n {{conda_env_name}} --file {{conda_envs_dir}}/{{conda_env_name}}-conda-linux-64.lock"
   args:
     creates: "{{miniconda_path}}/envs/{{conda_env_name}}/bin/python"
