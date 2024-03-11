@@ -84,6 +84,9 @@ init_git {{python_maproom_repo.url}} {{python_maproom_src_dir}} \
          {{python_maproom_repo.version}} {{git_ssh_prefix}}{{python_maproom_repo.name}}
 
 docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} . || fail $? "python maproom build failed"
+
+cd {{python_maproom_src_dir}}/update || fail $? "python maproom repo does not have an update script"
+docker build -t {{python_maproom_repo.name}}_update:{{python_maproom_repo.version}} . || fail $? "python maproom update container build failed"
 {% endif %}
 
 ### maproom

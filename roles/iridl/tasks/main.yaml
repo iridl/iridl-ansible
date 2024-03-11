@@ -314,6 +314,21 @@
   when: run_update_script | bool
   register: update_script
 
+- set_fact:
+    update_python_maproom_script: /usr/local/bin/update_python_maproom_data
+
+- name: python maproom update script
+  template:
+    dest: "{{update_python_maproom_script}}"
+    mode: 0744
+    src: update_python_maproom_data
+  when: python_maproom_repo is defined
+
+- name: run python maproom update script
+  command: bash -x {{update_python_maproom_script}}
+  when: (run_update_script | bool) && (python_maproom_repo is defined)
+  register: update_python_maproom_script
+
 - block:
   - debug:
       msg: "{{update_script.stderr_lines}}"

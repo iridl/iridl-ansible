@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+fail() {
+    local status=$1
+    # don't accidentally return success code
+    if [[ $((status)) -eq 0 ]]; then
+        status=1
+    fi
+    echo $2 >&2
+    exit $status
+}
+
+
+{% if python_maproom_repo is defined %}
+    docker run --rm \
+           -v {{data_dir}}:/input \
+           -v {{python_maproom_data_dir}}:/output:rw \
+           {{python_maproom_repo.name}}_update:{{python_maproom_repo.version}} \
+           /input /output || fail $? "python maproom data update failed"
+{% else %}
+    fail 1 "python maproom is not installed, can't update data"
+{% endif %}
+
+
+exit 0
