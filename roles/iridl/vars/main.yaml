@@ -1,3 +1,4 @@
+dldir: /usr/local/{{compose_project_name}}
 dl_homes_dir: "{{dataset_parent_dir}}/home"
 data_dir: "{{dataset_parent_dir}}/data"
 sql_dir: "{{dataset_parent_dir}}/sql"

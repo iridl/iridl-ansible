@@ -1,0 +1,51 @@
+- name: check for conda
+  stat:
+    path: "{{miniconda_path}}/bin/conda"
+  register: conda_stat
+
+- block:
+    - name: miniconda installer
+      get_url:
+        url: https://repo.anaconda.com/miniconda/{{miniconda_installer_filename}}
+        dest: /tmp/{{miniconda_installer_filename}}
+
+    - name: miniconda
+      shell: "bash /tmp/{{miniconda_installer_filename}} -b -p {{miniconda_path}}"
+
+    - name: clean up miniconda installer
+      file:
+        path: /tmp/{{miniconda_installer_filename}}
+        state: absent
+
+  when: not conda_stat.stat.exists
+
+- name: conda config
+  copy:
+    content: |
+      auto_activate_base: false
+    dest: "{{miniconda_path}}/.condarc"
+
+- name: conda init
+  command:
+    cmd: "{{miniconda_path}}/bin/conda init --system"
+    creates: /etc/profile.d/conda.sh
+
+- name: conda envs dir
+  file:
+    path: "{{conda_envs_dir}}"
+    state: directory
+
+- name: condarun script
+  copy:
+    dest: "{{conda_envs_dir}}/condarun"
+    mode: "u=rwx,g=rx,o=rx"
+    content: |
+      #!/bin/bash
+      set -e
+
+      env=$1
+      shift
+
+      . /etc/profile.d/conda.sh
+      conda activate "$env"
+      python "$@"

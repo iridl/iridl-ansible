@@ -43,6 +43,17 @@
       - "{{test_host}}"
       - localhost
 
-  # Invokes the iridl ansible role. Don't modify this.
   roles:
+    # Installs the core IRIDL software. Don't remove this.
     - iridl.iridl.iridl
+
+    # Installs miniconda and a conda environment for running update scripts.
+    # Comment this out if you don't have any update scripts.
+    - role: iridl.iridl.conda_env
+      conda_env_name: test
+      conda_env_file: test-conda-linux-64.lock
+
+    # Installs pycpt in a conda environment. Comment this out if you
+    # won't be running pycpt on the server.
+    - role: iridl.iridl.pycpt
+      pycpt_version: 2.7.2

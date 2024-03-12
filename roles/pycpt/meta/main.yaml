@@ -1,0 +1,4 @@
+dependencies:
+  - role: conda_env
+    conda_env_name: pycpt-{{pycpt_version}}
+    conda_env_url: https://github.com/iri-pycpt/notebooks/releases/download/v{{pycpt_version}}/conda-linux-64.lock
