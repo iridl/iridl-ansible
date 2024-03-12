@@ -19,6 +19,17 @@
 
   when: not conda_stat.stat.exists
 
+- name: conda config
+  copy:
+    content: |
+      auto_activate_base: false
+    dest: "{{miniconda_path}}/.condarc"
+
+- name: conda init
+  command:
+    cmd: "{{miniconda_path}}/bin/conda init --system"
+    creates: /etc/profile.d/conda.sh
+
 - name: conda envs dir
   file:
     path: "{{conda_envs_dir}}"
