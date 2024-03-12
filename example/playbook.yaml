@@ -50,6 +50,5 @@
     # Installs miniconda and a conda environment for running update scripts.
     # Comment this out if you don't have any update scripts.
     - role: iridl.iridl.conda_env
-      vars:
-        conda_env_name: test
-        conda_env_file: test-conda-linux-64.lock
+      conda_env_name: test
+      conda_env_file: test-conda-linux-64.lock
