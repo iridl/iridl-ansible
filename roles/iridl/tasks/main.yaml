@@ -440,6 +440,12 @@
     msg: "{{docker_compose_result.actions}}"
   when: python_maproom_repo is defined
 
+- name: generate-forecasts script
+  template:
+    src: generate-forecasts
+    dest: /usr/local/bin/generate-forecasts
+    mode: ugo+x
+
 - name: clean up files from old locations
   file:
     path: "{{item}}"

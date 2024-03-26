@@ -84,6 +84,19 @@ init_git {{python_maproom_repo.url}} {{python_maproom_src_dir}} \
          {{python_maproom_repo.version}} {{git_ssh_prefix}}{{python_maproom_repo.name}}
 
 docker build -t {{python_maproom_repo.name}}:{{python_maproom_repo.version}} . || fail $? "python maproom build failed"
+
+shopt -s nullglob
+for f in pycpt-forecasts/*/pycpt-version; do
+    pycpt_version=$(cat "$f")
+    if ! [ -x {{miniconda_path}}/envs/pycpt-$pycpt_version/bin/python ]; then
+        lockfile=/tmp/conda-linux-64.lock.$$
+        curl -L -o $lockfile https://github.com/iri-pycpt/notebooks/releases/download/v$pycpt_version/conda-linux-64.lock
+        source {{miniconda_path}}/etc/profile.d/conda.sh
+        conda create -n pycpt-$pycpt_version --file $lockfile
+        rm $lockfile
+    fi
+done
+shopt -u nullglob
 {% endif %}
 
 ### maproom
