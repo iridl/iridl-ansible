@@ -299,12 +299,13 @@
 - name: update script
   template:
     dest: "{{update_script}}"
-    mode: 0744
+    mode: 0755
     src: "update_datalib"
 
 - name: datag sudoers config
   copy:
     content: |
+      Defaults secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
       %datag ALL=(root) NOPASSWD: {{update_script}}
     dest: /etc/sudoers.d/datag_update
     mode: 0400
