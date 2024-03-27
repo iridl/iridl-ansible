@@ -440,11 +440,22 @@
     msg: "{{docker_compose_result.actions}}"
   when: python_maproom_repo is defined
 
+
+#
+# Tools for managing PyCPT forecasts
+#
 - name: generate-forecasts script
   template:
     src: generate-forecasts
     dest: /usr/local/bin/generate-forecasts
     mode: ugo+x
+
+- name: upload-forecasts script
+  template:
+    src: upload-forecasts
+    dest: /usr/local/bin/upload-forecasts
+    mode: ugo+x
+
 
 - name: clean up files from old locations
   file:
