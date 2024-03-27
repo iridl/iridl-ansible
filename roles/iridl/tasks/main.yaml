@@ -310,19 +310,6 @@
     dest: /etc/sudoers.d/datag_update
     mode: 0400
 
-- name: run update script
-  command: "bash -x {{update_script}} --build-classic"
-  when: run_update_script | bool
-  register: update_script
-
-- block:
-  - debug:
-      msg: "{{update_script.stderr_lines}}"
-
-  - debug:
-      msg: "{{update_script.stdout_lines}}"
-  when: update_script is not skipped
-
 - name: sql import dir
   file:
     path: "{{sql_dir}}"
@@ -403,6 +390,19 @@
   template:
     src: docker-compose.yaml
     dest: "{{compose_project_dir}}/docker-compose.yaml"
+
+- name: run update script
+  command: "bash -x {{update_script}} --build-classic"
+  when: run_update_script | bool
+  register: update_script
+
+- block:
+  - debug:
+      msg: "{{update_script.stderr_lines}}"
+
+  - debug:
+      msg: "{{update_script.stdout_lines}}"
+  when: update_script is not skipped
 
 - name: update docker-compose state for services pulled from registries
   docker_compose:
