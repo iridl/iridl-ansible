@@ -90,9 +90,9 @@ for f in pycpt-forecasts/*/pycpt-version; do
     pycpt_version=$(cat "$f")
     if ! [ -x {{miniconda_path}}/envs/pycpt-$pycpt_version/bin/python ]; then
         lockfile=/tmp/conda-linux-64.lock.$$
-        curl -L -o $lockfile https://github.com/iri-pycpt/notebooks/releases/download/v$pycpt_version/conda-linux-64.lock
-        source {{miniconda_path}}/etc/profile.d/conda.sh
-        conda create -n pycpt-$pycpt_version --file $lockfile
+        curl -L -o $lockfile https://github.com/iri-pycpt/notebooks/releases/download/v$pycpt_version/conda-linux-64.lock || fail
+        source {{miniconda_path}}/etc/profile.d/conda.sh || fail
+        conda create -n pycpt-$pycpt_version --file $lockfile || fail
         rm $lockfile
     fi
 done
@@ -116,12 +116,12 @@ fi
 if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     cd {{compose_project_dir}} || fail $? "failed to cd"
 
-    docker-compose up -d
+    docker-compose up -d || fail
 
-    docker-compose restart ingrid
-    docker-compose restart maproom
+    docker-compose restart ingrid || fail
+    docker-compose restart maproom || fail
     # in case one of the services was previously down, tell squid to check again.
-    docker-compose exec -T squid squid -k reconfigure
+    docker-compose exec -T squid squid -k reconfigure || fail
 fi
 
 exit 0
