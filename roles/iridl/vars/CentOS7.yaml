@@ -1,0 +1,3 @@
+docker_version: "docker-1"
+docker_compose_version: "v1"
+docker_python: "/usr/local/bin/python3"

@@ -1,3 +1,9 @@
+- name: Upgrade CA Certificates
+  package:
+    name:
+      - ca-certificates
+    state: latest
+
 - name: check for conda
   stat:
     path: "{{miniconda_path}}/bin/conda"

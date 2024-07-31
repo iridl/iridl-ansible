@@ -1,0 +1,8 @@
+- name: install docker, docker-compose
+  package:
+    name:
+      - docker
+      - docker-compose
+
+- set_fact:
+    docker_compose_command: "docker-compose"
