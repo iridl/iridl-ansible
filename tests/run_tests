@@ -142,7 +142,7 @@ _playbook() {
             return 1
             ;;
     esac
-    ansible-playbook \
+    ansible-playbook -vvv \
         -i $inventory \
         -e @vars-iri.yaml \
         -e @../example/secrets.yaml \
@@ -152,12 +152,18 @@ _playbook() {
 
 cd $(dirname $0) || fail
 mode=guest
+os=centos7
 while (( $# )); do
     echo $1
     case $1 in
         --mode)
             shift
             mode=$1
+            shift
+            ;;
+        --os)
+            shift
+            os=$1
             shift
             ;;
         destroy)

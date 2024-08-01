@@ -1,7 +1,12 @@
+{% if docker_compose_version == "v1" %}
 version: "3.2"
+{% endif %}
 services:
   squid:
     image: iridl/dlsquid:{{dlsquid_version}}
+{% if docker_compose_version == "v2" %}
+    container_name: "{{ compose_project_name }}_squid_1"
+{% endif %}
     ports:
       - "{{dl_http_port}}:80"
       - "{{dl_https_port}}:443"
@@ -69,6 +74,9 @@ services:
 
   ingrid:
     image: iridl/ingrid:{{ingrid_version}}
+{% if docker_compose_version == "v2" %}
+    container_name: "{{ compose_project_name }}_ingrid_1"
+{% endif %}
     expose:
       - 80
     restart: always

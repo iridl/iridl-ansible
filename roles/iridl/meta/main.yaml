@@ -1,2 +1,5 @@
 dependencies:
   - role: miniconda
+
+collections:
+  - community.docker

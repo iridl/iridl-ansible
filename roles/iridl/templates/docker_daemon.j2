@@ -1,0 +1,7 @@
+  {
+  {% if docker_registry_mirror is defined %}
+    "registry-mirrors": ["{{docker_registry_mirror }}"],
+    "insecure-registries": ["{{docker_registry_mirror }}"],
+  {% endif %}
+    "max-concurrent-downloads": {{docker_max_concurrent_downloads | default(3) | int}}
+  }

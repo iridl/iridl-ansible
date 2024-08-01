@@ -11,30 +11,49 @@
 - name: reconfigure squid
   command: docker exec {{compose_project_name}}_squid_1 squid -k reconfigure
 
-- name: restart squid
-  docker_compose:
-    project_src: "{{compose_project_dir}}"
-    services:
-      - squid
-    restarted: yes
-    # Unfortunately, ansible's docker_compose module overrides the
-    # stop_grace_period specified in docker-compose.yaml, so we also
-    # have to configure it here.
-    # See https://github.com/ansible-collections/community.general/issues/293
-    timeout: "{{squid_shutdown_lifetime + 10}}"
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-
 - name: reload postfix
   service:
     name: postfix
     state: reloaded
 
-- name: restart ingrid
+- name: restart squid v1
   docker_compose:
+    restarted: yes
+
+    # Unfortunately, ansible's docker_compose module overrides the
+    # stop_grace_period specified in docker-compose.yaml, so we also
+    # have to configure it here.
+    # See https://github.com/ansible-collections/community.general/issues/293
+    timeout: "{{squid_shutdown_lifetime + 10}}"
+    project_src: "{{compose_project_dir}}"
+    services:
+      - squid
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+
+- name: restart ingrid v1
+  docker_compose:
+    restarted: yes
     project_src: "{{compose_project_dir}}"
     services:
       - ingrid
-    restarted: yes
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+
+- name: restart squid v2
+  community.docker.docker_compose:
+    state: restarted
+    project_src: "{{compose_project_dir}}"
+    services:
+      - squid
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+
+- name: restart ingrid v2
+  community.docker.docker_compose:
+    state: restarted
+    project_src: "{{compose_project_dir}}"
+    services:
+      - ingrid
   vars:
     ansible_python_interpreter: "{{docker_python}}"

@@ -1,18 +1,32 @@
+- name: Include OS-Specific Variables
+  include_vars: "{{ ansible_distribution~ansible_distribution_major_version }}.yaml"
+
+- name: Setup OS-Specific Tasks
+  include_tasks: "{{ ansible_distribution~ansible_distribution_major_version }}_setup.yaml"
+
 #
 # General system settings
 #
 - name: enable EPEL yum repo
-  yum:
+  package:
     name: epel-release
 
-- name: yum
-  yum:
+- name: latest version packages
+  package:
     name:
       - screen
       - tmux
       - htop
       - iotop
+      - ca-certificates
+    state: latest
+
+- name: default version of packages
+  package:
+    name:
       - netcdf
+      - postfix
+      - git
 
 - name: mail relay config
   template:
@@ -131,9 +145,6 @@
 #
 # Docker and docker-compose
 #
-- set_fact:
-    docker_python: "/usr/bin/python3"
-
 - name: docker dir
   file:
     state: directory
@@ -147,22 +158,13 @@
     dest: /var/lib/docker
   when: docker_dir != "/var/lib/docker"
 
-- name: install docker, docker-compose
-  yum:
-    name:
-      - docker
-      - docker-compose
+- name: install docker, compose and dependencies
+  include_tasks: "{{ docker_version }}.yaml"
 
 - name: docker config file
-  copy:
+  template:
+    src: docker_daemon.j2
     dest: /etc/docker/daemon.json
-    content: >
-      {
-        "registry-mirrors": ["{{docker_registry_mirror}}"],
-        "insecure-registries": ["{{docker_registry_mirror}}"],
-        "max-concurrent-downloads": {{docker_max_concurrent_downloads | int}}
-      }
-
   notify: restart docker
 
 - name: start and enable docker
@@ -200,10 +202,6 @@
     hour: "0"
     job: docker exec {{compose_project_name}}_squid_1 squid -k rotate
 
-- set_fact:
-    squid_config_dir: "{{dldir}}/squid"
-    squid_shutdown_lifetime: 30
-
 - name: squid group
   group:
     name: squid
@@ -225,7 +223,7 @@
   template:
     src: squid.conf
     dest: "{{squid_config_dir}}/squid.conf"
-  notify: restart squid
+  notify: restart squid {{ docker_compose_version }}
 
 
 #
@@ -299,7 +297,7 @@
 - name: update script
   template:
     dest: "{{update_script}}"
-    mode: 0755
+    mode: "0755"
     src: "update_datalib"
 
 - name: datag sudoers config
@@ -360,7 +358,7 @@
   template:
     src: ingrid-localdefs.tex
     dest: "{{ingrid_config_dir}}/localdefs.tex"
-  notify: restart ingrid
+  notify: restart ingrid {{ docker_compose_version }}
 
 - name: ingrid cleantmp cron job
   cron:
@@ -386,13 +384,13 @@
     path: "{{compose_project_dir}}"
     state: directory
 
-- name: docker-compose.yaml
+- name: docker_compose.j2
   template:
-    src: docker-compose.yaml
+    src: docker_compose.j2
     dest: "{{compose_project_dir}}/docker-compose.yaml"
 
 - name: run update script
-  command: "bash -x {{update_script}} --build-classic"
+  command: "/usr/bin/bash -x {{update_script}} --build-classic"
   when: run_update_script | bool
   register: update_script
 
@@ -405,9 +403,9 @@
   when: update_script is not skipped
 
 - name: update docker-compose state for services pulled from registries
-  docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
-    pull: yes
+    pull: always
     remove_orphans: yes
     debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
@@ -424,11 +422,11 @@
     msg: "{{docker_compose_result.actions}}"
 
 - name: update docker-compose state for locally built services
-  docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
-    pull: no
+    pull: never
     remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
+ #   debug: yes # to get info on what changed (module doesn't support --diff)
     services:
       - pymaproom
   vars:
