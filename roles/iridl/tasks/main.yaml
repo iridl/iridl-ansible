@@ -19,6 +19,7 @@
       - htop
       - iotop
       - ca-certificates
+      - chrony
     state: latest
 
 - name: default version of packages
@@ -407,7 +408,7 @@
     project_src: "{{compose_project_dir}}"
     pull: always
     remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
+#    debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
     services:
       - squid

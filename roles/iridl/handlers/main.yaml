@@ -42,7 +42,7 @@
 
 - name: restart squid v2
   community.docker.docker_compose:
-    state: restarted
+    state: present
     project_src: "{{compose_project_dir}}"
     services:
       - squid
@@ -51,7 +51,7 @@
 
 - name: restart ingrid v2
   community.docker.docker_compose:
-    state: restarted
+    state: present
     project_src: "{{compose_project_dir}}"
     services:
       - ingrid
