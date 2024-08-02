@@ -1,0 +1,31 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box_check_update = false
+  config.ssh.insert_key = false
+
+  config.vm.define "dlserver1", primary: true, autostart: true do |x|
+    config.vm.box = "centos/stream9"
+    x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
+    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
+    x.vm.disk :disk, size: "30GB", primary: true
+    x.vm.provider :virtualbox do |vb|
+      vb.memory = 4 * 1024
+    end
+    x.vm.synced_folder "..", "/vagrant"
+    x.vm.provision "shell", privileged: false, inline: <<-SHELL
+      sudo setenforce 0
+      sudo sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
+      sudo yum -y update
+      sudo dnf install -y git python3 python3-pip
+
+      echo Rebooting...
+      sudo shutdown -r now
+
+      # Need to resize disk partition
+      # sudo parted /dev/sda
+      # >    resizepart 1 100%
+      # sudo resize2fs /dev/sda1
+   SHELL
+end

@@ -24,31 +24,11 @@ echo Rebooting...
 sudo shutdown -r now
 EOF
 
-$bootstrap_centos9 = <<-EOF
-#!/bin/bash
-set -e
-
-sudo parted -s /dev/sda resizepart 1 32211255295B
-sudo resize2fs /dev/sda1
-
-sudo yum install -y git python3 python3-pip
-python3 -m pip install --user --upgrade pip
-python3 -m pip install --user ansible==4.5.0
-
-sudo sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
-
-# sudo yum -y update
-
-echo Rebooting...
-sudo shutdown -r now
-EOF
-
 Vagrant.configure("2") do |config|
-  # config.vm.box_version = "1811.02"
   config.vm.box_check_update = false
   config.ssh.insert_key = false
 
-  config.vm.define "dlserver1", primary: true, autostart: false do |x|
+  config.vm.define "dlserver1", primary: true, autostart: true do |x|
     config.vm.box = "centos/7"
     x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
     x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
@@ -58,18 +38,6 @@ Vagrant.configure("2") do |config|
     x.vm.synced_folder "..", "/vagrant"
     x.vm.provision "file", source: "CentOS-Vault.repo", destination:"/tmp/CentOS-Vault.repo"
     x.vm.provision "shell", privileged: false, inline: $bootstrap_centos7
-  end
-
-  config.vm.define "dlserver9", primary: true, autostart: false do |x|
-    config.vm.box = "centos/stream9"
-    x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
-    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
-    x.vm.disk :disk, size: "30GB", primary: true
-    x.vm.provider :virtualbox do |vb|
-      vb.memory = 3 * 1024
-    end
-    x.vm.synced_folder "..", "/vagrant"
-    x.vm.provision "shell", privileged: false, inline: $bootstrap_centos9
   end
 
 end
