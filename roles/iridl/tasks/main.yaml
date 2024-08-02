@@ -241,7 +241,7 @@
   file:
     path: /root/.ssh
     state: directory
-    mode: 0700
+    mode: "0700"
 
 # The git hosts' ssh host key. Find this with the following
 # command, substituting the name of your git host for
@@ -404,11 +404,11 @@
   when: update_script is not skipped
 
 - name: update docker-compose state for services pulled from registries
-  community.docker.docker_compose_v2:
+  community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
-    pull: always
+    pull: yes
     remove_orphans: yes
-#    debug: yes # to get info on what changed (module doesn't support --diff)
+    debug: yes # to get info on what changed (module doesn't support --diff)
     timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
     services:
       - squid
@@ -418,27 +418,67 @@
   vars:
     ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
+  when: ansible_distribution_major_version == "7"
+
+- name: update docker-compose state for services pulled from registries
+  community.docker.docker_compose_v2:
+    project_src: "{{compose_project_dir}}"
+    pull: always
+    remove_orphans: yes
+    services:
+      - squid
+      - maproom
+      - postgres
+      - ingrid
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+  register: docker_compose_result
+  when: ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
+
+- debug:
+    msg: "{{docker_compose_result.what}}"
+  when: ansible_distribution_major_version == "9"
+
+- name: update docker-compose state for locally built services
+  community.docker.docker_compose:
+    project_src: "{{compose_project_dir}}"
+    pull: no
+    remove_orphans: yes
+    services:
+      - pymaproom
+  vars:
+    ansible_python_interpreter: "{{docker_python}}"
+  register: docker_compose_result
+  when:
+    - python_maproom_repo is defined
+    - ansible_distribution_major_version == "7"
 
 - name: update docker-compose state for locally built services
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
     pull: never
     remove_orphans: yes
- #   debug: yes # to get info on what changed (module doesn't support --diff)
     services:
       - pymaproom
   vars:
     ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
-  when: python_maproom_repo is defined
+  when:
+    - python_maproom_repo is defined
+    - ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
   when: python_maproom_repo is defined
 
+- debug:
+    msg: "{{docker_compose_result.what}}"
+  when:
+    - python_maproom_repo is defined
+    - ansible_distribution_major_version == "9"
 
 #
 # Tools for managing PyCPT forecasts
