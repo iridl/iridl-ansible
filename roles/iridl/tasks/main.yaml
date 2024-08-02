@@ -241,7 +241,7 @@
   file:
     path: /root/.ssh
     state: directory
-    mode: "0700"
+    mode: '0700'
 
 # The git hosts' ssh host key. Find this with the following
 # command, substituting the name of your git host for
@@ -278,7 +278,7 @@
   file:
     path: "{{dldir}}/ssh"
     state: directory
-    mode: 0700
+    mode: '0700'
 
 - set_fact:
     git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
@@ -298,7 +298,7 @@
 - name: update script
   template:
     dest: "{{update_script}}"
-    mode: "0755"
+    mode: '0755'
     src: "update_datalib"
 
 - name: datag sudoers config
@@ -307,7 +307,7 @@
       Defaults secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
       %datag ALL=(root) NOPASSWD: {{update_script}}
     dest: /etc/sudoers.d/datag_update
-    mode: 0400
+    mode: '0400'
 
 - name: sql import dir
   file:
@@ -324,7 +324,7 @@
 
       docker exec -it {{compose_project_name}}_postgres_1 /usr/local/bin/entrypoint.sh execsql iridb
     dest: /usr/local/bin/sql_exec
-    mode: 0744
+    mode: '0744'
 
 - name: sql command script
   copy:
@@ -336,7 +336,7 @@
       fi
       docker exec -i $tty_arg {{compose_project_name}}_postgres_1 psql -U postgres iridb
     dest: /usr/local/bin/sql_interactive
-    mode: 0744
+    mode: '0744'
 
 - name: sql sudoers config
   copy:
@@ -344,7 +344,7 @@
       %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_exec
       %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_interactive
     dest: /etc/sudoers.d/datag_sql
-    mode: 0400
+    mode: '0400'
 
 
 #
@@ -437,9 +437,6 @@
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
-
-- debug:
-    msg: "{{docker_compose_result.what}}"
   when: ansible_distribution_major_version == "9"
 
 - name: update docker-compose state for locally built services
@@ -447,6 +444,7 @@
     project_src: "{{compose_project_dir}}"
     pull: no
     remove_orphans: yes
+    debug: yes # to get info on what changed (module doesn't support --diff)
     services:
       - pymaproom
   vars:
@@ -472,10 +470,6 @@
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
-  when: python_maproom_repo is defined
-
-- debug:
-    msg: "{{docker_compose_result.what}}"
   when:
     - python_maproom_repo is defined
     - ansible_distribution_major_version == "9"
