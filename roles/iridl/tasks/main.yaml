@@ -11,7 +11,7 @@
   package:
     name: epel-release
 
-- name: latest version packages
+- name: required packages
   package:
     name:
       - screen
@@ -20,11 +20,6 @@
       - iotop
       - ca-certificates
       - chrony
-    state: latest
-
-- name: default version of packages
-  package:
-    name:
       - netcdf
       - postfix
       - git
