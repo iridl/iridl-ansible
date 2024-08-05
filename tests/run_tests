@@ -26,7 +26,7 @@
 #    reuse it.
 
 # Select a servername from the Vagrantfile to run the tests on
-#    --servername [dlserver1|dlserver9]
+#    --server [dlserver1|dlserver9]
 #    defaults to dlserver9
 #
 
@@ -54,7 +54,7 @@ cleanup() {
 trap cleanup EXIT
 
 destroy() {
-    vagrant destroy $1 --force
+    vagrant destroy $servername --force
 }
 
 ansible_test() {
@@ -115,11 +115,11 @@ _up() {
     # vagrant-reload plugin would be a cleaner way to handle this, but
     # the version of vagrant I'm getting from ubuntu 18.04 is too old
     # to support that.
-    vagrant up $1 || return 1
+    vagrant up $servername || return 1
     echo waiting for VM
     i=10
     while (( i > 0 )); do
-        if vagrant ssh $1 -- true; then
+        if vagrant ssh $servername -- true; then
             break
         fi
         sleep 10
@@ -132,11 +132,10 @@ _up() {
     fi
     # Update shared folder. Docs say this happens automatically, but
     # it doesn't. Maybe my version of vagrant is too old.
-    vagrant rsync $1
+    vagrant rsync $servername
 }
 
 _playbook() {
-  servername=$1
     case $mode in
         host)
             inventory=inventory.cfg
@@ -150,7 +149,7 @@ _playbook() {
             ;;
     esac
     # set the correct servername in the inventory file
-    sed -e "s/^dlserver\d/$servername/" $inventory > /tmp/inventory.cfg
+    sed -e "s/^dlserver[[:digit:]]/$servername/" $inventory > /tmp/inventory.cfg
     ansible-playbook \
         -i /tmp/inventory.cfg \
         -e @vars-iri.yaml \
@@ -161,7 +160,7 @@ _playbook() {
 
 cd $(dirname $0) || fail
 mode=guest
-servername="dlserver9"
+servername=dlserver1
 while (( $# )); do
     echo $1
     case $1 in
@@ -176,13 +175,13 @@ while (( $# )); do
           shift
           ;;
         destroy)
-            $1 ${servername} || fail
+            $1 || fail
             shift
             ;;
         ansible_test)
             case $mode in
                 host)
-                    _install ${servername} || fail
+                    _install || fail
                     $1 || fail
                     ;;
                 *)
@@ -194,19 +193,19 @@ while (( $# )); do
         full | incremental | idempotency)
             case $mode in
                 host)
-                    _up ${servername} || fail
+                    _up || fail
                     _install || fail
-                    $1 ${servername} || fail
+                    $1 || fail
                     ;;
                 aux)
                     _install || fail
-                    $1 ${servername} || fail
+                    $1 || fail
                     ;;
                 guest)
-                    _up ${servername} || fail
+                    _up || fail
                     # Need a login shell so that .bash_profile gets
                     # loaded, putting ~/.local/bin on the PATH.
-                    vagrant ssh ${servername} -- exec bash -x -l -c "'/vagrant/tests/$0 --mode aux $1'" || fail
+                    vagrant ssh ${servername} -- exec bash -l -c "'/vagrant/tests/$0 --mode aux --server $servername $1'" || fail
                     ;;
             esac
             shift

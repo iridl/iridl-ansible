@@ -9,7 +9,7 @@ ntp_servers:
 # URL of a pull-through image registry cache. Setting this is useful
 # when testing the ansible role, to avoid re-downloading the same
 # images again and again. In a production configuration this is
-# usually commented out.
+# usually left undefined.
 # docker_registry_mirror:
 
 # At a site with low internet bandwidth, reduce this to 1.
