@@ -1,7 +1,7 @@
 - name: Upgrade CA Certificates
   package:
     name:
-      - ca-certificates
+      - ca-certificates-2023.2.60_v7.0.306-72.el7_9
     state: latest
 
 - name: check for conda

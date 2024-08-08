@@ -380,9 +380,9 @@
     path: "{{compose_project_dir}}"
     state: directory
 
-- name: docker_compose.j2
+- name: docker-compose.yaml
   template:
-    src: docker_compose.j2
+    src: docker-compose.yaml.j2
     dest: "{{compose_project_dir}}/docker-compose.yaml"
 
 - name: run update script
@@ -398,7 +398,7 @@
       msg: "{{update_script.stdout_lines}}"
   when: update_script is not skipped
 
-- name: update docker-compose state for services pulled from registries
+- name: CentOS7 update docker-compose state for services pulled from registries
   community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: yes
@@ -415,10 +415,10 @@
   register: docker_compose_result
   when: ansible_distribution_major_version == "7"
 
-- name: update docker-compose state for services pulled from registries
+- name: CentOS9 update docker-compose state for services pulled from registries
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
-    pull: always
+    pull: missing
     remove_orphans: yes
     services:
       - squid
@@ -431,10 +431,10 @@
   when: ansible_distribution_major_version == "9"
 
 - debug:
-    msg: "{{docker_compose_result.actions}}"
+    msg: "{{docker_compose_result}}"
   when: ansible_distribution_major_version == "9"
 
-- name: update docker-compose state for locally built services
+- name: CentOS7 update docker-compose state for locally built services
   community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: no
@@ -449,7 +449,7 @@
     - python_maproom_repo is defined
     - ansible_distribution_major_version == "7"
 
-- name: update docker-compose state for locally built services
+- name: CentOS9 update docker-compose state for locally built services
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
     pull: never
