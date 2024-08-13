@@ -1,8 +1,7 @@
 - name: Fix CentOS7 Repositories
   include_tasks: CentOS7_vault.yaml
 
-- name: Upgrade CA Certificates
+- name: Install CA Certificates
   package:
     name:
-      - ca-certificates
-    state: latest
+      - ca-certificates-2023.2.60_v7.0.306-72.el7_9
