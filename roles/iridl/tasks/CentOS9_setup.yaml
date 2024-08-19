@@ -1,0 +1,4 @@
+- name: Install CA Certificates
+  package:
+    name:
+      - ca-certificates

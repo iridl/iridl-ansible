@@ -1,0 +1,31 @@
+- name: Disable CentOS 7.9.2009
+  file:
+    path: /etc/yum.repos.d/CentOS-Base.repo
+    state: absent
+
+- name: Add CentOS7.9.2009 Base to Vault
+  yum_repository:
+    name: C7.9.2009-base
+    description: C7.9.2009-base
+    baseurl: https://vault.centos.org/7.9.2009/os/$basearch/
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    file: CentOS-Vault
+    enabled: yes
+
+- name: Add CentOS7.9.2009 - Updates to Vault
+  yum_repository:
+    name: C7.9.2009-updates
+    description: C7.9.2009-updates
+    baseurl: https://vault.centos.org/7.9.2009/updates/$basearch/
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    file: CentOS-Vault
+    enabled: yes
+
+- name: Add CentOS7.9.2009 - Extras to Vault
+  yum_repository:
+    name: C7.9.2009-extras
+    description: C7.9.2009-extras
+    baseurl: https://vault.centos.org/7.9.2009/extras/$basearch/
+    gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+    file: CentOS-Vault
+    enabled: yes
