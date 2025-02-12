@@ -41,7 +41,7 @@
     ansible_python_interpreter: "{{docker_python}}"
 
 - name: restart squid v2
-  community.docker.docker_compose_v2:
+  community.docker.docker_compose:
     state: restarted
     project_src: "{{compose_project_dir}}"
     services:
@@ -50,7 +50,7 @@
     ansible_python_interpreter: "{{docker_python}}"
 
 - name: restart ingrid v2
-  community.docker.docker_compose_v2:
+  community.docker.docker_compose:
     state: restarted
     project_src: "{{compose_project_dir}}"
     services:

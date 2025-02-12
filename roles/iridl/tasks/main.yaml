@@ -415,7 +415,7 @@
   when: ansible_distribution_major_version == "7"
 
 - name: CentOS9 update docker-compose state for services pulled from registries
-  community.docker.docker_compose_v2:
+  community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: missing
     remove_orphans: yes
@@ -449,7 +449,7 @@
     - ansible_distribution_major_version == "7"
 
 - name: CentOS9 update docker-compose state for locally built services
-  community.docker.docker_compose_v2:
+  community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
     pull: never
     remove_orphans: yes
