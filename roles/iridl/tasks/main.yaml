@@ -397,23 +397,6 @@
       msg: "{{update_script.stdout_lines}}"
   when: update_script is not skipped
 
-- name: CentOS7 update docker-compose state for services pulled from registries
-  community.docker.docker_compose:
-    project_src: "{{compose_project_dir}}"
-    pull: yes
-    remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
-    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
-    services:
-      - squid
-      - maproom
-      - postgres
-      - ingrid
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-  register: docker_compose_result
-  when: ansible_distribution_major_version == "7"
-
 - name: CentOS9 update docker-compose state for services pulled from registries
   community.docker.docker_compose:
     project_src: "{{compose_project_dir}}"
@@ -427,26 +410,9 @@
   vars:
     ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
-  when: ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result}}"
-  when: ansible_distribution_major_version == "9"
-
-- name: CentOS7 update docker-compose state for locally built services
-  community.docker.docker_compose:
-    project_src: "{{compose_project_dir}}"
-    pull: no
-    remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
-    services:
-      - pymaproom
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-  register: docker_compose_result
-  when:
-    - python_maproom_repo is defined
-    - ansible_distribution_major_version == "7"
 
 - name: CentOS9 update docker-compose state for locally built services
   community.docker.docker_compose:
@@ -460,13 +426,11 @@
   register: docker_compose_result
   when:
     - python_maproom_repo is defined
-    - ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
   when:
     - python_maproom_repo is defined
-    - ansible_distribution_major_version == "9"
 
 #
 # Tools for managing PyCPT forecasts
