@@ -1,9 +1,3 @@
-- name: Include OS-Specific Variables
-  include_vars: "{{ ansible_distribution~ansible_distribution_major_version }}.yaml"
-
-- name: Setup OS-Specific Tasks
-  include_tasks: "{{ ansible_distribution~ansible_distribution_major_version }}_setup.yaml"
-
 #
 # General system settings
 #
@@ -14,6 +8,7 @@
 - name: required packages
   package:
     name:
+      - ca-certificates
       - screen
       - tmux
       - htop
@@ -51,7 +46,6 @@
     name: chronyd
     state: started
     enabled: true
-
 
 #
 # Permission structures to allow selected users to manage data
@@ -154,7 +148,7 @@
   when: docker_dir != "/var/lib/docker"
 
 - name: install docker, compose and dependencies
-  include_tasks: "{{ docker_version }}.yaml"
+  include_tasks: "docker.yaml"
 
 - name: docker config file
   template:
@@ -172,8 +166,6 @@
   docker_login:
     username: iridlserver
     password: "{{docker_hub_access_token}}"
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   when: docker_hub_access_token is defined
   # Intentionally not logging out. The (read-only) access token is
   # stored unencrypted on the server, and we're ok with that.
@@ -182,9 +174,6 @@
   docker_image:
     name: iridl/maproom-dev:{{maproom_dev_version}}
     source: pull
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-
 
 #
 # squid
@@ -218,8 +207,7 @@
   template:
     src: squid.conf
     dest: "{{squid_config_dir}}/squid.conf"
-  notify: restart squid {{ docker_compose_version }}
-
+  notify: restart squid
 
 #
 # git and access to git repos
@@ -353,7 +341,7 @@
   template:
     src: ingrid-localdefs.tex
     dest: "{{ingrid_config_dir}}/localdefs.tex"
-  notify: restart ingrid {{ docker_compose_version }}
+  notify: restart ingrid
 
 - name: ingrid cleantmp cron job
   cron:
@@ -397,24 +385,7 @@
       msg: "{{update_script.stdout_lines}}"
   when: update_script is not skipped
 
-- name: CentOS7 update docker-compose state for services pulled from registries
-  community.docker.docker_compose:
-    project_src: "{{compose_project_dir}}"
-    pull: yes
-    remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
-    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
-    services:
-      - squid
-      - maproom
-      - postgres
-      - ingrid
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-  register: docker_compose_result
-  when: ansible_distribution_major_version == "7"
-
-- name: CentOS9 update docker-compose state for services pulled from registries
+- name: Update docker-compose state for services pulled from registries
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
     pull: missing
@@ -424,49 +395,26 @@
       - maproom
       - postgres
       - ingrid
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
-  when: ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result}}"
-  when: ansible_distribution_major_version == "9"
 
-- name: CentOS7 update docker-compose state for locally built services
-  community.docker.docker_compose:
-    project_src: "{{compose_project_dir}}"
-    pull: no
-    remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
-    services:
-      - pymaproom
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-  register: docker_compose_result
-  when:
-    - python_maproom_repo is defined
-    - ansible_distribution_major_version == "7"
-
-- name: CentOS9 update docker-compose state for locally built services
+- name: Update docker-compose state for locally built services
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
     pull: never
     remove_orphans: yes
     services:
       - pymaproom
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
   when:
     - python_maproom_repo is defined
-    - ansible_distribution_major_version == "9"
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
   when:
     - python_maproom_repo is defined
-    - ansible_distribution_major_version == "9"
 
 #
 # Tools for managing PyCPT forecasts

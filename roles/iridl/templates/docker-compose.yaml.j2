@@ -1,12 +1,7 @@
-{% if docker_compose_version == "v1" %}
-version: "3.2"
-{% endif %}
 services:
   squid:
     image: iridl/dlsquid:{{dlsquid_version}}
-{% if docker_compose_version == "v2" %}
     container_name: "{{ compose_project_name }}_squid_1"
-{% endif %}
     ports:
       - "{{dl_http_port}}:80"
       - "{{dl_https_port}}:443"
@@ -38,9 +33,7 @@ services:
 
   maproom:
     image: iridl/maproom-base:{{maproom_base_version}}
-{% if docker_compose_version == "v2" %}
     container_name: "{{ compose_project_name }}_maproom_1"
-{% endif %}
     user: "{{maproom_uid}}:{{maproom_uid}}"
     expose:
       - 8000
@@ -51,9 +44,7 @@ services:
 {% if python_maproom_repo is defined %}
   pymaproom:
     image: "{{python_maproom_repo.name}}:{{python_maproom_repo.version}}"
-{% if docker_compose_version == "v2" %}
     container_name: "{{ compose_project_name }}_pymaproom_1"
-{% endif %}
     user: "{{pymaproom_uid}}:{{pymaproom_uid}}"
     expose:
       - 8000
@@ -64,9 +55,7 @@ services:
 
   postgres:
     image: iridl/ingriddb:{{ingriddb_version}}
-{% if docker_compose_version == "v2" %}
     container_name: "{{ compose_project_name }}_postgres_1"
-{% endif %}
     ports:
       - 127.0.0.1:5432:5432
     expose:
@@ -82,9 +71,7 @@ services:
 
   ingrid:
     image: iridl/ingrid:{{ingrid_version}}
-{% if docker_compose_version == "v2" %}
     container_name: "{{ compose_project_name }}_ingrid_1"
-{% endif %}
     expose:
       - 80
     restart: always

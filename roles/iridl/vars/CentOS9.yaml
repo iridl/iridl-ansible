@@ -1,3 +1,0 @@
-docker_version: "docker-ce"
-docker_compose_version: "v2"
-docker_python: "/usr/bin/python3"
