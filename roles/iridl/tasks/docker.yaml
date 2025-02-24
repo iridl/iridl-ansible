@@ -1,0 +1,13 @@
+- name: install docker-ce repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: install docker-ce
+  # latest stable versions as of 2/11/25
+  # installing docker-ce installs the appropriate dependencies that were previously defined here:
+  # - docker-ce-cli, containerd-io, docker-buildx-plugin, docker-compose-plugin
+  package:
+    name:
+      - docker-ce-3:27.5.1-1.el9
+      - python3-docker
