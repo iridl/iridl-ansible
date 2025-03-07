@@ -1,6 +1,23 @@
 #
 # General system settings
 #
+
+# Disable PackageKit so it doesn't grab the yum lock and prevent this
+# playbook from running. PackageKit is not included in the minimal
+# server image, but some partners do a desktop installation.
+
+- name: stop PackageKit if running
+  systemd:
+    name: packagekit
+    state: stopped
+  failed_when: false
+
+- name: mask PackageKit
+  systemd:
+    name: packagekit
+    masked: true
+
+
 - name: enable EPEL yum repo
   yum:
     name: epel-release
