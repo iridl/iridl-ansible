@@ -2,17 +2,26 @@
 # General system settings
 #
 - name: enable EPEL yum repo
-  yum:
+  package:
     name: epel-release
 
-- name: yum
-  yum:
+- name: enable Code Ready Block required by epel
+  community.general.dnf_config_manager:
+    name: crb
+    state: enabled
+
+- name: required packages
+  package:
     name:
+      - ca-certificates
       - screen
       - tmux
       - htop
       - iotop
+      - chrony
       - netcdf
+      - postfix
+      - git
 
 - name: mail relay config
   template:
@@ -42,7 +51,6 @@
     name: chronyd
     state: started
     enabled: true
-
 
 #
 # Permission structures to allow selected users to manage data
@@ -131,9 +139,6 @@
 #
 # Docker and docker-compose
 #
-- set_fact:
-    docker_python: "/usr/bin/python3"
-
 - name: docker dir
   file:
     state: directory
@@ -147,22 +152,13 @@
     dest: /var/lib/docker
   when: docker_dir != "/var/lib/docker"
 
-- name: install docker, docker-compose
-  yum:
-    name:
-      - docker
-      - docker-compose
+- name: install docker, compose and dependencies
+  include_tasks: "docker.yaml"
 
 - name: docker config file
-  copy:
+  template:
+    src: docker_daemon.j2
     dest: /etc/docker/daemon.json
-    content: >
-      {
-        "registry-mirrors": ["{{docker_registry_mirror}}"],
-        "insecure-registries": ["{{docker_registry_mirror}}"],
-        "max-concurrent-downloads": {{docker_max_concurrent_downloads | int}}
-      }
-
   notify: restart docker
 
 - name: start and enable docker
@@ -175,8 +171,6 @@
   docker_login:
     username: iridlserver
     password: "{{docker_hub_access_token}}"
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   when: docker_hub_access_token is defined
   # Intentionally not logging out. The (read-only) access token is
   # stored unencrypted on the server, and we're ok with that.
@@ -185,9 +179,6 @@
   docker_image:
     name: iridl/maproom-dev:{{maproom_dev_version}}
     source: pull
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
-
 
 #
 # squid
@@ -199,10 +190,6 @@
     minute: "0"
     hour: "0"
     job: docker exec {{compose_project_name}}_squid_1 squid -k rotate
-
-- set_fact:
-    squid_config_dir: "{{dldir}}/squid"
-    squid_shutdown_lifetime: 30
 
 - name: squid group
   group:
@@ -227,7 +214,6 @@
     dest: "{{squid_config_dir}}/squid.conf"
   notify: restart squid
 
-
 #
 # git and access to git repos
 #
@@ -242,7 +228,7 @@
   file:
     path: /root/.ssh
     state: directory
-    mode: 0700
+    mode: '0700'
 
 # The git hosts' ssh host key. Find this with the following
 # command, substituting the name of your git host for
@@ -279,7 +265,7 @@
   file:
     path: "{{dldir}}/ssh"
     state: directory
-    mode: 0700
+    mode: '0700'
 
 - set_fact:
     git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
@@ -299,7 +285,7 @@
 - name: update script
   template:
     dest: "{{update_script}}"
-    mode: 0755
+    mode: '0755'
     src: "update_datalib"
 
 - name: datag sudoers config
@@ -308,7 +294,7 @@
       Defaults secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
       %datag ALL=(root) NOPASSWD: {{update_script}}
     dest: /etc/sudoers.d/datag_update
-    mode: 0400
+    mode: '0400'
 
 - name: sql import dir
   file:
@@ -325,7 +311,7 @@
 
       docker exec -it {{compose_project_name}}_postgres_1 /usr/local/bin/entrypoint.sh execsql iridb
     dest: /usr/local/bin/sql_exec
-    mode: 0744
+    mode: '0744'
 
 - name: sql command script
   copy:
@@ -337,7 +323,7 @@
       fi
       docker exec -i $tty_arg {{compose_project_name}}_postgres_1 psql -U postgres iridb
     dest: /usr/local/bin/sql_interactive
-    mode: 0744
+    mode: '0744'
 
 - name: sql sudoers config
   copy:
@@ -345,7 +331,7 @@
       %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_exec
       %datag ALL=(root) NOPASSWD: /usr/local/bin/sql_interactive
     dest: /etc/sudoers.d/datag_sql
-    mode: 0400
+    mode: '0400'
 
 
 #
@@ -388,11 +374,11 @@
 
 - name: docker-compose.yaml
   template:
-    src: docker-compose.yaml
+    src: docker-compose.yaml.j2
     dest: "{{compose_project_dir}}/docker-compose.yaml"
 
 - name: run update script
-  command: "bash -x {{update_script}} --build-classic"
+  command: "/usr/bin/bash -x {{update_script}} --build-classic"
   when: run_update_script | bool
   register: update_script
 
@@ -404,42 +390,36 @@
       msg: "{{update_script.stdout_lines}}"
   when: update_script is not skipped
 
-- name: update docker-compose state for services pulled from registries
-  docker_compose:
+- name: Update docker-compose state for services pulled from registries
+  community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
-    pull: yes
+    pull: missing
     remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
-    timeout: "{{squid_shutdown_lifetime + 10}}" # See comment in "restart squid" handler
     services:
       - squid
       - maproom
       - postgres
       - ingrid
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
 
 - debug:
-    msg: "{{docker_compose_result.actions}}"
+    msg: "{{docker_compose_result}}"
 
-- name: update docker-compose state for locally built services
-  docker_compose:
+- name: Update docker-compose state for locally built services
+  community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
-    pull: no
+    pull: never
     remove_orphans: yes
-    debug: yes # to get info on what changed (module doesn't support --diff)
     services:
       - pymaproom
-  vars:
-    ansible_python_interpreter: "{{docker_python}}"
   register: docker_compose_result
-  when: python_maproom_repo is defined
+  when:
+    - python_maproom_repo is defined
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
-  when: python_maproom_repo is defined
-
+  when:
+    - python_maproom_repo is defined
 
 #
 # Tools for managing PyCPT forecasts
