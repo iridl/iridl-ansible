@@ -1,6 +1,6 @@
   {
     "log-driver": "local",
-  {% if docker_registry_mirror is defined %}
+  {% if (docker_registry_mirror is defined) and (docker_registry_mirror|length>0) %}
     "registry-mirrors": ["{{docker_registry_mirror }}"],
     "insecure-registries": ["{{docker_registry_mirror }}"],
   {% endif %}
