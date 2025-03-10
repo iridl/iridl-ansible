@@ -116,12 +116,12 @@ fi
 if [[ -d {{compose_project_dir}} ]]; then  # doesn't exist yet on first run
     cd {{compose_project_dir}} || fail $? "failed to cd"
 
-    docker-compose up -d || fail
+    docker compose up -d || fail
 
-    docker-compose restart ingrid || fail
-    docker-compose restart maproom || fail
+    docker compose restart ingrid || fail
+    docker compose restart maproom || fail
     # in case one of the services was previously down, tell squid to check again.
-    docker-compose exec -T squid squid -k reconfigure || fail
+    docker compose exec -T squid squid -k reconfigure || fail
 fi
 
 exit 0
