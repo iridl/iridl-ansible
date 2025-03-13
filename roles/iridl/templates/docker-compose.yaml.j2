@@ -18,7 +18,7 @@ services:
     # when we use ansible to stop or restart the service. In the
     # latter case, ansible overrides this timeout, so we have to
     # specify it redundantly in the "restart squid" handler.
-    stop_grace_period: "{{squid_shutdown_lifetime + 10}}s"
+    stop_grace_period: {{squid_shutdown_lifetime + 10}}s
     volumes:
       - "{{squid_config_dir}}:/usr/local/etc/squid:rslave,ro"
 
