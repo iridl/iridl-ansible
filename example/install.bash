@@ -77,4 +77,4 @@ if [[ "${answer}" != "yes" ]]; then
   exit 1
 fi
 
-ansible-playbook --ask-become-pass -i inventory.cfg -e @../secrets.yaml ${BUILD} playbook.yaml
+ansible-playbook --ask-become-pass -i inventory.cfg -e @../secrets.yaml ${CHECK} ${BUILD} playbook.yaml
