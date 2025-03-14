@@ -5,25 +5,21 @@
 #
 # It will check for any local git changes that might need to be pushed, and it will check for
 # any git changes that need to be pulled.
-#
-# There are 2 possible flags:
-#   --check     don't run changes, just check what will be done.
-#   --build     rebuilds the classic maprooms
-#
+##
 VENV=/opt/datalib_venv3.12
 BUILD=""
-CHECK=""
+CHECK="-diff"
 
 function showhelp()
 {
   echo "$0 [--build] [--check]"
   echo " --check:    Optional argument to check what will be done without making changes."
-  echo " --build:    Optional argument to rebuild the maprooms.  This can take a long time."
+  echo " --build:    Optional argument to build or rebuild the maprooms.  This can take a long time."
   echo ""
   exit
 }
 
-if [ $? -gt 0 ]; then
+if [ $# -gt 0 ]; then
   case $1 in
     --build|-build|build)
       BUILD="-e run_update_script=yes"
@@ -41,7 +37,7 @@ fi
 echo -n "checking python virtual environment..."
 if [ -d "${VENV}" ]; then
   source "${VENV}/bin/activate"
-  if [ $# != 0 ]; then
+  if [ $? != 0 ]; then
     echo ""
     echo "Couldn't activate Python environment ${VENV}"
     echo "Please review the documentation: https://dldocs.iri.columbia.edu/admin/server/centos9_stream.html#install_python"
@@ -73,8 +69,10 @@ echo ""
 if [[ "${CHECK}" == "" ]]; then
   echo "You are running the command in check mode, no changes will be made."
 else
-  echo "You are "
-read -p "Do you want to continue: (yes or no) (default is no)" answer
+  echo "You are about to make install your changes to the Data Library installation."
+fi
+echo ""
+read -p "Do you want to continue: (yes or no) (default is no): " answer
 if [[ "${answer}" != "yes" ]]; then
   exit 1
 fi
