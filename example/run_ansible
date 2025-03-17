@@ -13,7 +13,7 @@ FETCH=1
 
 function showhelp()
 {
-  echo "$0 [--build] [--check]"
+  echo "$0 [--build] [--check] [--no-fetch]"
   echo " --check:     Optional argument to check what will be done without making changes."
   echo " --build:     Optional argument to build or rebuild the maprooms.  This can take a long time."
   echo " --no-fetch:  Optional argument in case of a lack of internet connection. This will disable"
