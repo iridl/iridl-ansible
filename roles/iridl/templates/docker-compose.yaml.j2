@@ -13,11 +13,6 @@ services:
     # SIGKILL, squid exits without cleaning up its pid file, and
     # potentially corrupts its cache.
     #
-    # Note: this takes effect when we run docker-compose from the
-    # command line, or when the docker daemon gets shut down, but not
-    # when we use ansible to stop or restart the service. In the
-    # latter case, ansible overrides this timeout, so we have to
-    # specify it redundantly in the "restart squid" handler.
     stop_grace_period: {{squid_shutdown_lifetime + 10}}s
     volumes:
       - "{{squid_config_dir}}:/usr/local/etc/squid:rslave,ro"

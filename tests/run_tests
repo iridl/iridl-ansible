@@ -85,10 +85,7 @@ idempotency() {
 _install() {
     if [[ -z "$builddir" ]]; then
         builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || return 1
-        # Current docs say to use ANSIBLE_COLLECTIONS_PATH singular, but
-        # ansible 2.9 uses ANSIBLE_COLLECTIONS_PATHS plural, and later
-        # versions respect that too.
-        export ANSIBLE_COLLECTIONS_PATHS=$builddir
+        export ANSIBLE_COLLECTIONS_PATH=$builddir
 
         # This works with ansible 4:
         #
@@ -142,6 +139,7 @@ _playbook() {
             return 1
             ;;
     esac
+    export ANSIBLE_CONFIG=../example/ansible.cfg
     ansible-playbook \
         -i $inventory \
         -e @vars-iri.yaml \
