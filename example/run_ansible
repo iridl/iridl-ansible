@@ -24,7 +24,7 @@ function showhelp()
   exit
 }
 
-if [ $# -gt 0 ]; then
+while (( $# )); do
   case $1 in
     --build)
       BUILD="-e run_update_script=yes"
@@ -39,7 +39,8 @@ if [ $# -gt 0 ]; then
       showhelp
       ;;
   esac
-fi
+  shift
+done
 
 # Check if the virtual environment exists
 echo -n "checking python virtual environment..."
