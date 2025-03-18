@@ -9,7 +9,7 @@
 # Available sub-commands:
 #
 #    ansible_test: runs ansible-test. Only available in host mode,
-#    because the version of ansible in the guest is too old.
+#    because it must be run in sudo mode.
 #
 #    full: runs the playbook including the update_datalib script. Do
 #    this for the first run of the playbook on a fresh VM.
@@ -30,12 +30,12 @@
 # A single run of the playbook typical during development. Leaves the
 # VM running after the script exits.
 #
-#    ./run_tests --mode host incremental
+#    ./run-tests --mode host incremental
 #
 # The full test suite for use in CI.
 #
-#    ./run_tests --mode host ansible_test full idempotency destroy
-#    ./run_tests --mode guest full idempotency destroy
+#    ./run-tests --mode host ansible_test full idempotency destroy
+#    ./run-tests --mode guest full idempotency destroy
 
 fail() {
   echo $*
@@ -61,7 +61,7 @@ ansible_test() {
 }
 
 full() {
-    _playbook -e run_update_script=yes
+    _playbook build
 }
 
 incremental() {
@@ -86,15 +86,7 @@ _install() {
     if [[ -z "$builddir" ]]; then
         builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || return 1
         export ANSIBLE_COLLECTIONS_PATH=$builddir
-
-        # This works with ansible 4:
-        #
-        #     ansible-galaxy collection install ..
-        #
-        # but ansible 2.9 doesn't support a path in place of a
-        # collection name, so doing it in two steps for now.
-        ansible-galaxy collection build --output-path $builddir .. || return 1
-        ansible-galaxy collection install $builddir/*.tar.gz || return 1
+        ansible-galaxy collection install .. || return 1
     fi
 }
 
@@ -127,24 +119,38 @@ _up() {
 }
 
 _playbook() {
-    case $mode in
-        host)
-            inventory=inventory.cfg
-            ;;
-        aux)
-            inventory=../example/inventory.cfg
-            ;;
-        *)
-            echo _playbook called in guest mode
-            return 1
-            ;;
-    esac
-    ansible-playbook \
-        -i $inventory \
-        -e @vars-iri.yaml \
-        -e @../example/secrets.yaml \
-        ../example/playbook.yaml \
-        "$@"
+  build=""
+  extraflags=""
+  for arg in "$*"; do
+    if [[ $arg == "build" ]]; then
+      build="--build"
+      extraflags="-e run_update_script=yes"
+    fi
+  done
+
+  case $mode in
+    host)
+      inventory=inventory.cfg
+      ansible-playbook \
+          -i $inventory \
+          -e @vars-iri.yaml \
+          -e @../example/secrets.yaml \
+          ../example/playbook.yaml ${extraflags}
+      ;;
+    aux)
+      mkdir ${builddir}/dlconfig
+      cp ../example/* ${builddir}/dlconfig
+      cp ../example/secrets.yaml ${builddir}
+      (
+        cd ${builddir}/dlconfig &&
+        ./run-ansible ${build}
+      )
+      ;;
+    *)
+      echo _playbook called in guest mode
+      return 1
+      ;;
+  esac
 }
 
 cd $(dirname $0) || fail
@@ -181,6 +187,7 @@ while (( $# )); do
                     $1 || fail
                     ;;
                 aux)
+                    . /opt/datalib_venv3.12/bin/activate
                     _install || fail
                     $1 || fail
                     ;;

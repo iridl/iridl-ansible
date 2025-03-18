@@ -13,13 +13,9 @@ FETCH=1
 
 function showhelp()
 {
-  echo "$0 [--build] [--check] [--no-fetch]"
+  echo "$0 [--build] [--check]"
   echo " --check:     Optional argument to check what will be done without making changes."
   echo " --build:     Optional argument to build or rebuild the maprooms.  This can take a long time."
-  echo " --no-fetch:  Optional argument in case of a lack of internet connection. This will disable"
-  echo "              the fetch from the remote git repository.  This should only be used if you are"
-  echo "              completely sure that the remote repository hasn't changed, otherwise you could"
-  echo "              end up reverting to an older version without features that were previously installed."
   echo ""
   exit
 }
@@ -31,9 +27,6 @@ while (( $# )); do
       ;;
     --check)
       CHECK="--check"
-      ;;
-    --no-fetch)
-      FETCH=0
       ;;
     *)
       showhelp
