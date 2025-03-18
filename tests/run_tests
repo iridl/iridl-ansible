@@ -139,7 +139,6 @@ _playbook() {
             return 1
             ;;
     esac
-    export ANSIBLE_CONFIG=../example/ansible.cfg
     ansible-playbook \
         -i $inventory \
         -e @vars-iri.yaml \
