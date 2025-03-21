@@ -39,10 +39,10 @@
   shell: /usr/bin/newaliases
   when: newalias.changed
 
-- name: chrony.conf
+- name: chrony.conf.j2
   template:
-    src: chrony.conf
-    dest: /etc/chrony.conf
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf.j2
   notify:
     restart chronyd
 

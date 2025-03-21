@@ -2,9 +2,8 @@
 
 # Tests the ansible role in a VM.
 
-# Two modes are available: in host mode, ansible runs on the host,
-# connecting to the VM via ssh; in guest mode, ansible is installed in
-# the VM and then run there, using a local connection.
+# This is meant to provide the same experience a remote DL install would
+# have, so the this script is installed on the VM and run there.
 
 # Available sub-commands:
 #
@@ -30,23 +29,28 @@
 # A single run of the playbook typical during development. Leaves the
 # VM running after the script exits.
 #
-#    ./run-tests --mode host incremental
+#    ./run-tests incremental
 #
 # The full test suite for use in CI.
 #
-#    ./run-tests --mode host ansible_test full idempotency destroy
-#    ./run-tests --mode guest full idempotency destroy
+#    ./run-tests ansible_test full idempotency destroy
+
+guest=0
+myname=$(id -un)
+if [[ "${myname}" == "vagrant" ]]; then
+  guest=1
+fi
 
 fail() {
-  echo $*
-  exit 1
+    echo $*
+    exit 1
 }
 
 cleanup() {
-    [[ -n "$builddir" ]] && rm -rf $builddir
+    [[ -n "$builddir" ]] && rm -rf $builddir "${builddir}/../secrets.yaml"
 }
 
-trap cleanup EXIT
+# trap cleanup EXIT
 
 destroy() {
     vagrant destroy --force
@@ -61,7 +65,7 @@ ansible_test() {
 }
 
 full() {
-    _playbook build
+    _playbook --build
 }
 
 incremental() {
@@ -83,14 +87,27 @@ idempotency() {
 }
 
 _install() {
-    if [[ -z "$builddir" ]]; then
-        builddir=$(mktemp --tmpdir=/tmp --directory ansible-test.XXXXXXXXXX) || return 1
-        export ANSIBLE_COLLECTIONS_PATH=$builddir
-        ansible-galaxy collection install .. || return 1
+    if [[ ${guest} -eq 0 ]]; then
+      vagrant rsync
+      return
+    fi
+
+    if [[ -z "${builddir}" ]]; then
+        builddir="/home/vagrant/dlconfig"
+        mkdir "${builddir}" || return 1
+        source /opt/datalib_venv3.12/bin/activate
+        ansible-galaxy collection install -p ${builddir} .. || return 1
+        deactivate
+        cp ${builddir}/ansible_collections/iridl/iridl/example/* ${builddir}
+        mv ${builddir}/secrets.yaml ${builddir}/..
     fi
 }
 
 _up() {
+    if [[ ${guest} -eq 1 ]]; then
+        return
+    fi
+
     # Try repeatedly to connect to the VM. If the ssh port isn't open
     # when ansible attempts to connect (e.g. after the provisioner
     # reboots the VM), then attempts to connect to it fail immediately
@@ -119,85 +136,27 @@ _up() {
 }
 
 _playbook() {
-  build=""
-  extraflags=""
-  for arg in "$*"; do
-    if [[ $arg == "build" ]]; then
-      build="--build"
-      extraflags="-e run_update_script=yes"
-    fi
-  done
-
-  case $mode in
-    host)
-      inventory=inventory.cfg
-      ansible-playbook \
-          -i $inventory \
-          -e @vars-iri.yaml \
-          -e @../example/secrets.yaml \
-          ../example/playbook.yaml ${extraflags}
-      ;;
-    aux)
-      mkdir ${builddir}/dlconfig
-      cp ../example/* ${builddir}/dlconfig
-      cp ../example/secrets.yaml ${builddir}
-      (
-        cd ${builddir}/dlconfig &&
-        ./run-ansible ${build}
-      )
-      ;;
-    *)
-      echo _playbook called in guest mode
-      return 1
-      ;;
-  esac
+    (
+        cd ${builddir} &&
+        ./run-ansible $*
+    )
 }
 
 cd $(dirname $0) || fail
-mode=guest
+
 while (( $# )); do
-    echo $1
     case $1 in
-        --mode)
-            shift
-            mode=$1
-            shift
-            ;;
         destroy)
             $1 || fail
             shift
             ;;
-        ansible_test)
-            case $mode in
-                host)
-                    _install || fail
-                    $1 || fail
-                    ;;
-                *)
-                    fail "$1 only works in host mode because ansible 2.9 doesn't support it"
-                    ;;
-            esac
-            shift
-            ;;
-        full | incremental | idempotency)
-            case $mode in
-                host)
-                    _up || fail
-                    _install || fail
-                    $1 || fail
-                    ;;
-                aux)
-                    . /opt/datalib_venv3.12/bin/activate
-                    _install || fail
-                    $1 || fail
-                    ;;
-                guest)
-                    _up || fail
-                    # Need a login shell so that .bash_profile gets
-                    # loaded, putting ~/.local/bin on the PATH.
-                    vagrant ssh -- exec bash -l -c "'/vagrant/tests/$0 --mode aux $1'" || fail
-                    ;;
-            esac
+        full | incremental | idempotency | ansible_test)
+            _install || fail
+            if [[ ${guest} -eq 1 ]]; then
+              $1 || fail
+            else
+              vagrant ssh -- exec bash -x -l -c "'/vagrant/tests/$0 $1'" || fail
+            fi
             shift
             ;;
         *)
