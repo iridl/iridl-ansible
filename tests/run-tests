@@ -35,11 +35,7 @@
 #
 #    ./run-tests ansible_test full idempotency destroy
 
-guest=0
-myname=$(id -un)
-if [[ "${myname}" == "vagrant" ]]; then
-  guest=1
-fi
+builddir="${HOME}/dlconfig"
 
 fail() {
     echo $*
@@ -47,10 +43,11 @@ fail() {
 }
 
 cleanup() {
-    [[ -n "$builddir" ]] && rm -rf $builddir "${builddir}/../secrets.yaml"
+    [[ -n "${builddir}" ]] && rm -rf ${builddir}  ${HOME}/secrets.yaml
+    echo "cleanup done"
 }
 
-# trap cleanup EXIT
+trap cleanup EXIT
 
 destroy() {
     vagrant destroy --force
@@ -59,7 +56,7 @@ destroy() {
 ansible_test() {
     # In a subshell so that the cd doesn't affect later actions
     (
-        cd $builddir/ansible_collections/iridl/iridl &&
+        cd ${builddir}/ansible_collections/iridl/iridl &&
         ansible-test sanity --docker
     )
 }
@@ -92,8 +89,7 @@ _install() {
       return
     fi
 
-    if [[ -z "${builddir}" ]]; then
-        builddir="/home/vagrant/dlconfig"
+    if [[ ! -d "${builddir}" ]]; then
         mkdir "${builddir}" || return 1
         source /opt/datalib_venv3.12/bin/activate
         ansible-galaxy collection install -p ${builddir} .. || return 1
@@ -104,10 +100,6 @@ _install() {
 }
 
 _up() {
-    if [[ ${guest} -eq 1 ]]; then
-        return
-    fi
-
     # Try repeatedly to connect to the VM. If the ssh port isn't open
     # when ansible attempts to connect (e.g. after the provisioner
     # reboots the VM), then attempts to connect to it fail immediately
@@ -144,6 +136,14 @@ _playbook() {
 
 cd $(dirname $0) || fail
 
+guest=0
+myname=$(id -un)
+if [[ "${myname}" == "vagrant" ]]; then
+  guest=1
+else
+  _up
+fi
+
 while (( $# )); do
     case $1 in
         destroy)
@@ -155,7 +155,7 @@ while (( $# )); do
             if [[ ${guest} -eq 1 ]]; then
               $1 || fail
             else
-              vagrant ssh -- exec bash -x -l -c "'/vagrant/tests/$0 $1'" || fail
+              vagrant ssh -- exec bash -l -c "'/vagrant/tests/$0 $1'" || fail
             fi
             shift
             ;;
