@@ -37,13 +37,20 @@
 
 builddir="${HOME}/dlconfig"
 
+_is_vagrant() {
+    if [[ "${HOSTNAME}" == "vagrant-iridl-ansible" ]]; then
+        return 0
+    fi
+    return 1
+}
+
 fail() {
     echo $*
     exit 1
 }
 
 cleanup() {
-    [[ -n "${builddir}" ]] && rm -rf ${builddir}  ${HOME}/secrets.yaml
+    [[ -n "${builddir}" ]] && rm -rf "${builddir}"  ${HOME}/secrets.yaml
     echo "cleanup done"
 }
 
@@ -56,8 +63,9 @@ destroy() {
 ansible_test() {
     # In a subshell so that the cd doesn't affect later actions
     (
+        source /opt/datalib_venv3.12/bin/activate
         cd ${builddir}/ansible_collections/iridl/iridl &&
-        ansible-test sanity --docker
+        ansible-test sanity
     )
 }
 
@@ -84,7 +92,7 @@ idempotency() {
 }
 
 _install() {
-    if [[ ${guest} -eq 0 ]]; then
+    if ! _is_vagrant; then
       vagrant rsync
       return
     fi
@@ -107,6 +115,9 @@ _up() {
     # vagrant-reload plugin would be a cleaner way to handle this, but
     # the version of vagrant I'm getting from ubuntu 18.04 is too old
     # to support that.
+    if _is_vagrant; then
+      return
+    fi
     vagrant up || return 1
     echo waiting for VM
     i=10
@@ -130,19 +141,11 @@ _up() {
 _playbook() {
     (
         cd ${builddir} &&
-        ./run-ansible $*
+        ./run-ansible --nopw $*
     )
 }
 
 cd $(dirname $0) || fail
-
-guest=0
-myname=$(id -un)
-if [[ "${myname}" == "vagrant" ]]; then
-  guest=1
-else
-  _up
-fi
 
 while (( $# )); do
     case $1 in
@@ -151,11 +154,12 @@ while (( $# )); do
             shift
             ;;
         full | incremental | idempotency | ansible_test)
-            _install || fail
-            if [[ ${guest} -eq 1 ]]; then
-              $1 || fail
+            if _is_vagrant; then
+                _install || fail
+                $1 || fail
             else
-              vagrant ssh -- exec bash -l -c "'/vagrant/tests/$0 $1'" || fail
+                _up || fail
+                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$0 $1'" || fail
             fi
             shift
             ;;

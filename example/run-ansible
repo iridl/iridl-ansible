@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script is used to run the ansible-galaxy iridl installation.
 # It will check for the existence of the virtual environment: /opt/datalib_venv3.12
@@ -9,13 +9,15 @@
 VENV=/opt/datalib_venv3.12
 BUILD=""
 CHECK=""
-FETCH=1
+VERBOSE=""
+BECOME="--ask-become-pass"
 
 function showhelp()
 {
-  echo "$0 [--build] [--check]"
+  echo "$0 [--build] [--check] [-v]"
   echo " --check:     Optional argument to check what will be done without making changes."
   echo " --build:     Optional argument to build or rebuild the maprooms.  This can take a long time."
+  echo " -v:          Optional argument to make the output more verbose.  Use multiple times to increase verbose-ness (i.e. -vv)"
   echo ""
   exit
 }
@@ -28,6 +30,11 @@ while (( $# )); do
     --check)
       CHECK="--check"
       ;;
+    --nopw)
+      BECOME="--become"
+      ;;
+    -v*)
+      ;;
     *)
       showhelp
       ;;
@@ -38,8 +45,7 @@ done
 # Check if the virtual environment exists
 echo -n "checking python virtual environment..."
 if [ -d "${VENV}" ]; then
-  source "${VENV}/bin/activate"
-  if [ $? != 0 ]; then
+  if ! source "${VENV}/bin/activate"; then
     echo ""
     echo "Couldn't activate Python environment ${VENV}"
     echo "Please review the documentation: https://dldocs.iri.columbia.edu/admin/server/centos9_stream.html#install_python"
@@ -57,4 +63,5 @@ if [ ! -f "../secrets.yaml" ]; then
   exit 1
 fi
 
-ansible-playbook --ask-become-pass -i inventory.cfg -e @../secrets.yaml ${CHECK} ${BUILD} playbook.yaml
+echo "ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${CHECK} ${BUILD} ${VERBOSE} playbook.yaml"
+ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${CHECK} ${BUILD} ${VERBOSE} playbook.yaml
