@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash -eu
+
+build_classic=""
 
 fail() {
     local status=$1

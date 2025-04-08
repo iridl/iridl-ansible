@@ -265,14 +265,6 @@
   # These are public (host) keys, not secrets, so no need to encrypt them.
   with_items:
     - host: bitbucket.org
-      key: bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAubiN81eDcafrgMeLzaFPsw2kNvEcqTKl/VqLat/MaB33pZy0y3rJZtnqwR2qOOvbwKZYKiEO1O6VqNEBxKvJJelCq0dTXWT5pbO2gDXC6h6QDXCaHo6pOHGPUy+YBaGQRGuSusMEASYiWunYN0vCAI8QaXnWMXNMdFP3jHAJH0eDsoiGnLPBlBp4TNm6rYI74nMzgz3B9IikW4WVK+dc8KZJZWYjAuORU3jc1c/NPskD2ASinf8v3xnfXeukU0sJ5N6m5E8VLjObPEO+mN2t/FZTMZLiFqPWc/ALSqnMnnhwrNi2rbfg/rd/IpL8Le3pSBne8+seeFVBoGqzHM9yXw==
-      state: absent
-
-    - host: github.com
-      key: github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-      state: absent
-
-    - host: bitbucket.org
       key: bitbucket.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIazEu89wgQZ4bqs3d63QSMzYVa0MuJ2e2gKTKqu+UUO
 
     - host: github.com
@@ -292,11 +284,24 @@
 - set_fact:
     git_key_file_prefix: "{{dldir}}/ssh/id_rsa-git-"
     git_ssh_prefix: "/usr/local/bin/ssh-git-"
+    repo_items: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is defined else []) }}"
+
+- name: set up git ssh private keys
+  template:
+    src: private_key.j2
+    dest: "{{ dldir }}/ssh/id_rsa-git-{{ item.name }}"
+    mode: "0600"
+  with_items: "{{ repo_items }}"
+  no_log: true
 
 - name: set up git access keys
-  include_tasks: git_ssh.yaml
+  template:
+    src: ssh-git.j2
+    dest: "/usr/local/bin/ssh-git-{{ item.name }}"
+    mode: "0744"
+  with_items: "{{ repo_items }}"
   no_log: true
-  loop: "{{ [ dlentries_repo, maproom_repo ] + ([ python_maproom_repo ] if python_maproom_repo is defined else []) }}"
+
 
 #
 # Scripts for managing data
@@ -426,6 +431,7 @@
 
 - debug:
     msg: "{{docker_compose_result}}"
+    verbosity: 2
 
 - name: Update docker-compose state for locally built services
   community.docker.docker_compose_v2:

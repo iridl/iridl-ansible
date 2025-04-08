@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Tests the ansible role in a VM.
 
@@ -121,7 +121,7 @@ _up() {
     vagrant up || return 1
     echo waiting for VM
     i=10
-    while (( i > 0 )); do
+    while (( --i > 0 )); do
         if vagrant ssh -- true; then
             break
         fi
