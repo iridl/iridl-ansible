@@ -8,8 +8,6 @@
 ##
 VENV=/opt/datalib_venv3.12
 BUILD=""
-CHECK=""
-VERBOSE=""
 BECOME="--ask-become-pass"
 
 function showhelp()
