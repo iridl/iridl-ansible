@@ -159,7 +159,7 @@ while (( $# )); do
                 $1 || fail
             else
                 _up || fail
-                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$0 $1'" || fail
+                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) $1'" || fail
             fi
             shift
             ;;
