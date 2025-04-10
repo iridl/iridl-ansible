@@ -1,0 +1,8 @@
+{
+    "log-driver": "journald",
+{% if docker_registry_mirror != None %}
+    "registry-mirrors": ["{{docker_registry_mirror }}"],
+    "insecure-registries": ["{{docker_registry_mirror }}"],
+{% endif %}
+    "max-concurrent-downloads": {{docker_max_concurrent_downloads}}
+}

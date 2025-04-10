@@ -1,0 +1,170 @@
+#!/bin/bash -eu
+
+# Tests the ansible role in a VM.
+
+# This is meant to provide the same experience a remote DL install would
+# have, so the this script is installed on the VM and run there.
+
+# Available sub-commands:
+#
+#    ansible_test: runs ansible-test. Only available in host mode,
+#    because it must be run in sudo mode.
+#
+#    full: runs the playbook including the update_datalib script. Do
+#    this for the first run of the playbook on a fresh VM.
+#
+#    incremental: runs the playbook without the update_datalib
+#    script. Use this for quick testing during development.
+#
+#    idempotency: like incremental, but fails if the run reports any
+#    changes. Use this on a second run to verify that the playbook is
+#    idempotent.
+#
+#    destroy: tears down the VM. If this action isn't invoked, the VM
+#    is left running when the script exits and subsequent runs will
+#    reuse it.
+
+# Examples:
+#
+# A single run of the playbook typical during development. Leaves the
+# VM running after the script exits.
+#
+#    ./run-tests incremental
+#
+# The full test suite for use in CI.
+#
+#    ./run-tests ansible_test full idempotency destroy
+
+builddir="${HOME}/dlconfig"
+
+_is_vagrant() {
+    if [[ "${HOSTNAME}" == "vagrant-iridl-ansible" ]]; then
+        return 0
+    fi
+    return 1
+}
+
+fail() {
+    echo $*
+    exit 1
+}
+
+cleanup() {
+    [[ -n "${builddir}" ]] && rm -rf "${builddir}"  ${HOME}/secrets.yaml
+    echo "cleanup done"
+}
+
+trap cleanup EXIT
+
+destroy() {
+    vagrant destroy --force
+}
+
+ansible_test() {
+    # In a subshell so that the cd doesn't affect later actions
+    (
+        source /opt/datalib_venv3.12/bin/activate
+        cd ${builddir}/ansible_collections/iridl/iridl &&
+        ansible-test sanity
+    )
+}
+
+full() {
+    _playbook --build
+}
+
+incremental() {
+    _playbook
+}
+
+idempotency() {
+    echo starting idempotency test $(date)
+    output=$(_playbook)
+    playbook_status=$?
+    echo "$output" | grep '^dlserver1 .*changed=0 ' > /dev/null
+    idempotency_status=$?
+    if (( $playbook_status || $idempotency_status )); then
+        echo "$output"
+        echo idempotency test failed $(date)
+        return 1
+    fi
+    echo idempotency test succeeded $(date)
+}
+
+_install() {
+    if ! _is_vagrant; then
+      vagrant rsync
+      return
+    fi
+
+    if [[ ! -d "${builddir}" ]]; then
+        mkdir "${builddir}" || return 1
+        source /opt/datalib_venv3.12/bin/activate
+        ansible-galaxy collection install -p ${builddir} .. || return 1
+        deactivate
+        cp ${builddir}/ansible_collections/iridl/iridl/example/* ${builddir}
+        mv ${builddir}/secrets.yaml ${builddir}/..
+    fi
+}
+
+_up() {
+    # Try repeatedly to connect to the VM. If the ssh port isn't open
+    # when ansible attempts to connect (e.g. after the provisioner
+    # reboots the VM), then attempts to connect to it fail immediately
+    # rather than waiting for the connection timeout. The
+    # vagrant-reload plugin would be a cleaner way to handle this, but
+    # the version of vagrant I'm getting from ubuntu 18.04 is too old
+    # to support that.
+    if _is_vagrant; then
+      return
+    fi
+    vagrant up || return 1
+    echo waiting for VM
+    i=10
+    while (( --i > 0 )); do
+        if vagrant ssh -- true; then
+            break
+        fi
+        sleep 10
+    done
+    if (( i > 0 )); then
+        echo VM is up
+    else
+        echo VM failed to come up
+        return 1
+    fi
+    # Update shared folder. Docs say this happens automatically, but
+    # it doesn't. Maybe my version of vagrant is too old.
+    vagrant rsync
+}
+
+_playbook() {
+    (
+        cd ${builddir} &&
+        ./run-ansible --nopw $*
+    )
+}
+
+cd $(dirname $0) || fail
+
+while (( $# )); do
+    case $1 in
+        destroy)
+            $1 || fail
+            shift
+            ;;
+        full | incremental | idempotency | ansible_test)
+            if _is_vagrant; then
+                _install || fail
+                $1 || fail
+            else
+                _up || fail
+                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) $1'" || fail
+            fi
+            shift
+            ;;
+        *)
+            fail unknown command $1
+            ;;
+    esac
+done

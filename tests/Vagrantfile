@@ -1,35 +1,38 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$bootstrap = <<-EOF
+$centos9_bootstrap= <<-EOF
 #!/bin/bash
 set -e
-
-sudo cp /tmp/CentOS-Vault.repo /etc/yum.repos.d/
-sudo rm /etc/yum.repos.d/CentOS-Base.repo
-
-sudo yum install -y git python3
-python3 -m pip install --user --upgrade pip
-python3 -m pip install --user ansible==4.5.0
-sudo sed -i s/SELINUX=enforcing/SELINUX=disabled/ /etc/selinux/config
-echo Rebooting...
-sudo shutdown -r now
+sed -i s/SELINUX=enforcing/SELINUX=permissive/ /etc/selinux/config 
+setenforce permissive
+dnf install -y git python3.12
+python3.12 -m venv /opt/datalib_venv3.12
+/opt/datalib_venv3.12/bin/pip install --upgrade pip
+/opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
+hostnamectl hostname vagrant-iridl-ansible
 EOF
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "centos/7"
-  config.vm.box_version = "1811.02"
-  config.vm.box_check_update = false
   config.ssh.insert_key = false
+  resizedisk = <<-SCRIPT
+        echo ", +" | sfdisk -f -N 1 /dev/sda
+        partprobe
+        resize2fs -F /dev/sda1
+        shutdown -r now
+  SCRIPT
 
   config.vm.define "dlserver1", primary: true do |x|
+    x.vm.box = "centos/stream9"
+    x.vm.disk :disk, size: '20GB', primary: true
+    x.vm.box_check_update = false
     x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
     x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
     x.vm.provider :virtualbox do |vb|
       vb.memory = 4 * 1024
     end
     x.vm.synced_folder "..", "/vagrant"
-    x.vm.provision "file", source: "CentOS-Vault.repo", destination: "/tmp/"
-    x.vm.provision "shell", privileged: false, inline: $bootstrap
+    x.vm.provision "shell", :inline => $centos9_bootstrap
+    x.vm.provision "shell", :inline => resizedisk
   end
 end

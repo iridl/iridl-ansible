@@ -1,0 +1,2 @@
+#!/bin/sh
+ ssh -i {{git_key_file_prefix}}{{item.name}} -o IdentitiesOnly=yes "$@"
