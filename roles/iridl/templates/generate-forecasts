@@ -7,7 +7,7 @@ fcst_name=$1
 configs_dir={{python_maproom_src_dir}}/pycpt-forecasts
 
 config_dir="$configs_dir/$fcst_name"
-if [ $# -ne 1 ] || ! [ -d "$config_dir" ]; then
+if ! [ -d "$config_dir" ]; then
     echo "Usage: $0 <forecast_name>"
     echo "forecast_name must match one of the subdirectories of $configs_dir :"
     ls "$configs_dir"
