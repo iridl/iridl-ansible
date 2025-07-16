@@ -20,4 +20,4 @@ source {{miniconda_path}}/etc/profile.d/conda.sh
 conda activate pycpt-$pycpt_version
 
 # run pycpt
-generate-forecasts-from-config "$config_dir/config.py"
+generate-forecasts-from-config "$config_dir/config.py" "$@"
