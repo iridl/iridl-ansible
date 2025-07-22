@@ -12,8 +12,8 @@ unknown_local_recipient_reject_code = 550
 {% if mail_relay is not none %}
 relayhost = {{ mail_relay }}
 {% endif %}
-alias_maps = hash:/etc/aliases
-alias_database = hash:/etc/aliases
+alias_maps = lmdb:/etc/aliases
+alias_database = lmdb:/etc/aliases
 debug_peer_level = 2
 debugger_command =
 	 PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin

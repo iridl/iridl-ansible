@@ -186,13 +186,11 @@
     state: absent
 
 - name: install docker-ce
-  # latest stable versions as of 3/7/25
   # installing docker-ce installs the appropriate dependencies that were previously defined here:
   # - docker-ce-cli, containerd-io, docker-buildx-plugin, docker-compose-plugin
   package:
-    name:
-      # let docker-ce determine the corresponding packages it requires
-      - docker-ce-3:28.0.1-1.el9
+    name: "{{docker-ce-version}}"
+    state: present
 
 - name: docker config file
   template:

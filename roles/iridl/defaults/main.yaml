@@ -58,8 +58,6 @@ admin_emails: []
 # mail_relay: "[mail.example.com]:25"
 mail_relay: null
 
-
-
 # Container version numbers for the various Data Library software
 # packages. Do not use "latest", or you might find your software
 # being updated when you don't expect it, potentially to a
@@ -69,3 +67,5 @@ ingriddb_version: d13b453
 maproom_base_version: 3450dbf
 maproom_dev_version: d22d3bd
 dlsquid_version: de6ed54
+
+docker-ce-version: "docker-ce-3:28.3.2-1.el{{ansible_distribution_major_version}}"
