@@ -189,7 +189,7 @@
   # installing docker-ce installs the appropriate dependencies that were previously defined here:
   # - docker-ce-cli, containerd-io, docker-buildx-plugin, docker-compose-plugin
   package:
-    name: "{{docker-ce-version}}"
+    name: "{{docker_ce_version}}"
     state: present
 
 - name: docker config file
