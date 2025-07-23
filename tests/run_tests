@@ -144,7 +144,6 @@ _playbook() {
     esac
     ansible-playbook \
         -i $inventory \
-        -e @vars-iri.yaml \
         -e @../example/secrets.yaml \
         ../example/playbook.yaml \
         "$@"
