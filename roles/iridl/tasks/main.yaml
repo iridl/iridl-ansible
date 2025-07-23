@@ -40,6 +40,13 @@
       - postfix
       - git
 
+- name: postfix lmdb
+  package:
+    name: postfix-lmdb
+  notify:
+    - remove aliases.db
+    - newaliases
+
 - name: mail relay config
   template:
     src: postfix/main.cf
@@ -50,11 +57,7 @@
   template:
     src: postfix/aliases
     dest: /etc/aliases
-  register: newalias
-
-- name: newaliases
-  shell: /usr/bin/newaliases
-  when: newalias.changed
+  notify: newaliases
 
 - name: chrony.conf.j2
   template:
