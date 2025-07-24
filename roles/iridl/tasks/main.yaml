@@ -40,11 +40,17 @@
       - postfix
       - git
 
+# removes aliases.db as it's no longer used when we switch to lmdb
+# which we do because hash is no longer available in CentOS10
+- name: remove aliases.db
+  file:
+    path: /etc/aliases.db
+    state: absent
+
 - name: postfix lmdb
   package:
     name: postfix-lmdb
   notify:
-    - remove aliases.db
     - newaliases
 
 - name: mail relay config

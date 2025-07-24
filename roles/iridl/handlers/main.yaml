@@ -30,11 +30,6 @@
     services:
       - ingrid
 
-- name: remove aliases.db
-  file:
-    path: /etc/aliases.db
-    state: absent
-
 - name: newaliases
   command:
     cmd: /usr/bin/newaliases
