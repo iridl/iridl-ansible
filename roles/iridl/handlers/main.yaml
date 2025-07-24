@@ -33,5 +33,3 @@
 - name: newaliases
   command:
     cmd: /usr/bin/newaliases
-    creates: /etc/aliases.lmdb
-    
