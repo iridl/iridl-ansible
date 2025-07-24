@@ -29,3 +29,7 @@
     project_src: "{{compose_project_dir}}"
     services:
       - ingrid
+
+- name: newaliases
+  command:
+    cmd: /usr/bin/newaliases

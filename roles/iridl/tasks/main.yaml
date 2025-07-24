@@ -40,6 +40,19 @@
       - postfix
       - git
 
+# removes aliases.db as it's no longer used when we switch to lmdb
+# which we do because hash is no longer available in CentOS10
+- name: remove aliases.db
+  file:
+    path: /etc/aliases.db
+    state: absent
+
+- name: postfix lmdb
+  package:
+    name: postfix-lmdb
+  notify:
+    - newaliases
+
 - name: mail relay config
   template:
     src: postfix/main.cf
@@ -50,11 +63,7 @@
   template:
     src: postfix/aliases
     dest: /etc/aliases
-  register: newalias
-
-- name: newaliases
-  shell: /usr/bin/newaliases
-  when: newalias.changed
+  notify: newaliases
 
 - name: chrony.conf.j2
   template:
@@ -186,13 +195,11 @@
     state: absent
 
 - name: install docker-ce
-  # latest stable versions as of 3/7/25
   # installing docker-ce installs the appropriate dependencies that were previously defined here:
   # - docker-ce-cli, containerd-io, docker-buildx-plugin, docker-compose-plugin
   package:
-    name:
-      # let docker-ce determine the corresponding packages it requires
-      - docker-ce-3:28.0.1-1.el9
+    name: "{{docker_ce_version}}"
+    state: present
 
 - name: docker config file
   template:
