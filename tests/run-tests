@@ -110,9 +110,6 @@ _up() {
     # vagrant-reload plugin would be a cleaner way to handle this, but
     # the version of vagrant I'm getting from ubuntu 18.04 is too old
     # to support that.
-    if _is_vagrant; then
-      return
-    fi
     vagrant up || return 1
     echo waiting for VM
     i=10
