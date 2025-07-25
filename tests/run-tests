@@ -92,11 +92,6 @@ idempotency() {
 }
 
 _install() {
-    if ! _is_vagrant; then
-      vagrant rsync
-      return
-    fi
-
     if [[ ! -d "${builddir}" ]]; then
         mkdir "${builddir}" || return 1
         source /opt/datalib_venv3.12/bin/activate
