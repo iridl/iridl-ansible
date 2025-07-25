@@ -331,13 +331,19 @@
 # Scripts for managing data
 #
 - set_fact:
-    update_script: /usr/local/bin/update_datalib
+    update_script: /usr/local/bin/update-datalib
 
 - name: update script
   template:
     dest: "{{update_script}}"
     mode: '0755'
-    src: "update_datalib"
+    src: "update-datalib"
+
+- name: legacy update script for backwards compatibility
+  file:
+    path: /usr/local/bin/update_datalib
+    state: link
+    src: "{{update_script}}"
 
 - name: datag sudoers config
   copy:
