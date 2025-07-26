@@ -10,10 +10,10 @@
 #    ansible_test: runs ansible-test. Only available in host mode,
 #    because it must be run in sudo mode.
 #
-#    full: runs the playbook including the update_datalib script. Do
+#    full: runs the playbook including the update-datalib script. Do
 #    this for the first run of the playbook on a fresh VM.
 #
-#    incremental: runs the playbook without the update_datalib
+#    incremental: runs the playbook without the update-datalib
 #    script. Use this for quick testing during development.
 #
 #    idempotency: like incremental, but fails if the run reports any
