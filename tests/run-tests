@@ -37,13 +37,6 @@
 
 builddir="${HOME}/dlconfig"
 
-_is_vagrant() {
-    if [[ "${HOSTNAME}" == "vagrant-iridl-ansible" ]]; then
-        return 0
-    fi
-    return 1
-}
-
 fail() {
     echo $*
     exit 1
@@ -92,11 +85,6 @@ idempotency() {
 }
 
 _install() {
-    if ! _is_vagrant; then
-      vagrant rsync
-      return
-    fi
-
     if [[ ! -d "${builddir}" ]]; then
         mkdir "${builddir}" || return 1
         source /opt/datalib_venv3.12/bin/activate
@@ -115,9 +103,6 @@ _up() {
     # vagrant-reload plugin would be a cleaner way to handle this, but
     # the version of vagrant I'm getting from ubuntu 18.04 is too old
     # to support that.
-    if _is_vagrant; then
-      return
-    fi
     vagrant up || return 1
     echo waiting for VM
     i=10
@@ -147,19 +132,24 @@ _playbook() {
 
 cd $(dirname $0) || fail
 
+where=host
 while (( $# )); do
     case $1 in
+        --guest)
+            where=guest
+            shift
+            ;;
         destroy)
             $1 || fail
             shift
             ;;
         full | incremental | idempotency | ansible_test)
-            if _is_vagrant; then
+            if [ "$where" == guest ]; then
                 _install || fail
                 $1 || fail
             else
                 _up || fail
-                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) $1'" || fail
+                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) --guest $1'" || fail
             fi
             shift
             ;;
