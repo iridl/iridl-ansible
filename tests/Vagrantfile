@@ -10,7 +10,6 @@ dnf install -y git python3.12
 python3.12 -m venv /opt/datalib_venv3.12
 /opt/datalib_venv3.12/bin/pip install --upgrade pip
 /opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
-hostnamectl hostname vagrant-iridl-ansible
 EOF
 
 Vagrant.configure("2") do |config|

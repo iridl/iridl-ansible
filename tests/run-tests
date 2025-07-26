@@ -37,13 +37,6 @@
 
 builddir="${HOME}/dlconfig"
 
-_is_vagrant() {
-    if [[ "${HOSTNAME}" == "vagrant-iridl-ansible" ]]; then
-        return 0
-    fi
-    return 1
-}
-
 fail() {
     echo $*
     exit 1
@@ -139,19 +132,24 @@ _playbook() {
 
 cd $(dirname $0) || fail
 
+where=host
 while (( $# )); do
     case $1 in
+        --guest)
+            where=guest
+            shift
+            ;;
         destroy)
             $1 || fail
             shift
             ;;
         full | incremental | idempotency | ansible_test)
-            if _is_vagrant; then
+            if [ "$where" == guest ]; then
                 _install || fail
                 $1 || fail
             else
                 _up || fail
-                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) $1'" || fail
+                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) --guest $1'" || fail
             fi
             shift
             ;;
