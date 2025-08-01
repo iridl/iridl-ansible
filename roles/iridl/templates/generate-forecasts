@@ -1,23 +1,35 @@
 #!/bin/bash -eu
 
-fcst_name=$1
-
 configs_dir={{python_maproom_src_dir}}/pycpt-forecasts
 
-config_dir="$configs_dir/$fcst_name"
-if ! [ -d "$config_dir" ]; then
+usage() {
     echo "Usage: $0 <forecast_name>"
     echo "forecast_name must match one of the subdirectories of $configs_dir :"
     ls "$configs_dir"
     exit 1
+}
+
+
+if [[ $# > 0 ]]; then
+    fcst_name=$1
+else
+    usage
+fi
+
+config_dir="$configs_dir/$fcst_name"
+if ! [ -d "$config_dir" ]; then
+    usage
 fi
 
 # read pycpt version from config file
 pycpt_version=$(cat "$config_dir/pycpt-version")
 
-# activate conda environment for the specified pycpt version
+# Activate conda environment for the specified pycpt version.
+# Some activation scripts (including pycpt's) don't work with -u.
 source {{miniconda_path}}/etc/profile.d/conda.sh
+set +u
 conda activate pycpt-$pycpt_version
+set -u
 
 # run pycpt
 generate-forecasts-from-config "$config_dir/config.py" "$@"
