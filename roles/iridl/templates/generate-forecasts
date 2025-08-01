@@ -12,6 +12,7 @@ usage() {
 
 if [[ $# > 0 ]]; then
     fcst_name=$1
+    shift
 else
     usage
 fi
