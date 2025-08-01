@@ -33,7 +33,7 @@
     # sets their password.
     datag_users:
       # username: uid
-      testuser: 1001
+      vagrant: 1000
 
     # Host names and/or IP addresses that will be used to access the
     # server. If your server has multiple IP addresses (e.g. private
