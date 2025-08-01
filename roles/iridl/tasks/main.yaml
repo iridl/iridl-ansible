@@ -344,6 +344,7 @@
     path: /usr/local/bin/update_datalib
     state: link
     src: "{{update_script}}"
+    force: true
 
 - name: datag sudoers config
   copy:
