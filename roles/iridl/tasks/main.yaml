@@ -98,6 +98,12 @@
     regexp: "^GID_MAX"
     line: GID_MAX 1099 # reduce from default of 60000, which overlaps with our system users
 
+- name: default umask to support shared management of /data/datalib/data
+  lineinfile:
+    path: /etc/login.defs
+    regexp: "^UMASK"
+    line: "UMASK 002"
+
 - name: user accounts
   user:
     name: "{{item.key}}"
