@@ -15,14 +15,26 @@ EOF
 Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
   resizedisk = <<-SCRIPT
-        echo ", +" | sfdisk -f -N 1 /dev/sda
+        source /etc/os-release
+        # CentOS Stream 10 uses partition 2 for the disk, but 9 uses partition 1
+        if [ ${VERSION_ID} == "10" ]; then
+            PARTITION=2
+        elif [ ${VERSION_ID} == "9" ]; then
+            PARTITION=1
+        else
+            exit -1
+        fi
+
+        # expand the partition to its max size, which has been defined
+        # in the vm config x.vm.disk.
+        echo ", +" | sfdisk -f -N ${PARTITION} /dev/sda
         partprobe
-        resize2fs -F /dev/sda1
+        resize2fs -F /dev/sda${PARTITION}
         shutdown -r now
   SCRIPT
 
   config.vm.define "dlserver1", primary: true do |x|
-    x.vm.box = "centos/stream9"
+    x.vm.box = "centos/stream10"
     x.vm.disk :disk, size: '20GB', primary: true
     x.vm.box_check_update = false
     x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
@@ -34,4 +46,5 @@ Vagrant.configure("2") do |config|
     x.vm.provision "shell", :inline => $bootstrap
     x.vm.provision "shell", :inline => resizedisk
   end
+
 end
