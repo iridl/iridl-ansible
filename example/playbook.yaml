@@ -22,9 +22,9 @@
     python_maproom_repo:
       name: python_maproom
       host: github.com
-      url: git@github.com:iridl/python_maproom_testcountry.git
+      url: git@bitbucket.org:iridl/python_maproom_testcountry.git
       version: main
-      private_key: "{{python_maproom_private_key}}"
+      private_key: "{{bitbucket_private_key}}"
 
 
     # Unix users that should be members of the datag group. User
