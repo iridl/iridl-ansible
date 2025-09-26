@@ -52,8 +52,3 @@
     - role: iridl.iridl.conda_env
       conda_env_name: test
       conda_env_file: test-conda-linux-64.lock
-
-    # Installs pycpt in a conda environment. Not needed if pycpt is
-    # configured in python_maprooms.
-    # - role: iridl.iridl.pycpt
-    #   pycpt_version: 2.7.2
