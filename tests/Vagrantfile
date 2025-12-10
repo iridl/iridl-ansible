@@ -19,16 +19,14 @@ dnf install -y git python3.12
 python3.12 -m venv /opt/datalib_venv3.12
 /opt/datalib_venv3.12/bin/pip install --upgrade pip
 /opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
+echo ", +" | sfdisk -f -N 1 /dev/vda
+partprobe
+resize2fs -F /dev/vda1
+shutdown -r now
 EOF
 
 Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
-  resizedisk = <<-SCRIPT
-        echo ", +" | sfdisk -f -N 1 /dev/vda
-        partprobe
-        resize2fs -F /dev/vda1
-        shutdown -r now
-  SCRIPT
 
   config.vm.network :private_network,
                     :name => "vagrant-private",
@@ -46,6 +44,5 @@ Vagrant.configure("2") do |config|
     end
     x.vm.synced_folder "..", "/vagrant"
     x.vm.provision "shell", :inline => $bootstrap
-    x.vm.provision "shell", :inline => resizedisk
   end
 end
