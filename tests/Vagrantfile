@@ -1,6 +1,15 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+REQUIRED_PLUGINS = %w(vagrant-libvirt)
+exit unless REQUIRED_PLUGINS.all? do |plugin|
+  Vagrant.has_plugin?(plugin) || (
+    puts "The #{plugin} plugin is required. Please install it with:"
+    puts "$ vagrant plugin install #{plugin}"
+    false
+  )
+end
+
 $bootstrap= <<-EOF
 #!/bin/bash
 set -e
@@ -15,20 +24,25 @@ EOF
 Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
   resizedisk = <<-SCRIPT
-        echo ", +" | sfdisk -f -N 1 /dev/sda
+        echo ", +" | sfdisk -f -N 1 /dev/vda
         partprobe
-        resize2fs -F /dev/sda1
+        resize2fs -F /dev/vda1
         shutdown -r now
   SCRIPT
 
+  config.vm.network :private_network,
+                    :name => "vagrant-private",
+                    # This ip address must be listed in the dl_hosts
+                    # field in the playbook, to allow testing from
+                    # a browser on the host.
+                    :ip => "192.168.122.4"
+
   config.vm.define "dlserver1", primary: true do |x|
     x.vm.box = "centos/stream9"
-    x.vm.disk :disk, size: '20GB', primary: true
     x.vm.box_check_update = false
-    x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
-    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
-    x.vm.provider :virtualbox do |vb|
-      vb.memory = 5 * 1024
+    x.vm.provider :libvirt do |p|
+      p.memory = 5 * 1024
+      p.machine_virtual_size = 20 # GB
     end
     x.vm.synced_folder "..", "/vagrant"
     x.vm.provision "shell", :inline => $bootstrap

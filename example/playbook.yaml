@@ -41,6 +41,7 @@
     # else the ansible tests will fail.
     dl_hosts:
       - "{{test_host}}"
+      - "192.168.122.4"
       - localhost
 
   roles:
