@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
 #
 # This script is used to run the ansible-galaxy iridl installation.
 # It will check for the existence of the virtual environment: /opt/datalib_venv3.12

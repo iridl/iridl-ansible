@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+# NOTE do not use set -u / nounset. It makes the conda activation script fail
+# on pycpt v2.10.x and earlier.
 
 configs_dir={{python_maproom_src_dir}}/pycpt-forecasts
 
