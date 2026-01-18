@@ -19,9 +19,9 @@ dnf install -y git python3.12
 python3.12 -m venv /opt/datalib_venv3.12
 /opt/datalib_venv3.12/bin/pip install --upgrade pip
 /opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
-echo ", +" | sfdisk -f -N 1 /dev/vda
+echo ", +" | sfdisk -f -N 2 /dev/vda
 partprobe
-resize2fs -F /dev/vda1
+resize2fs -F /dev/vda2
 shutdown -r now
 EOF
 
@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
                     :ip => "192.168.122.4"
 
   config.vm.define "dlserver1", primary: true do |x|
-    x.vm.box = "centos/stream9"
+    x.vm.box = "centos/stream10"
     x.vm.box_check_update = false
     x.vm.provider :libvirt do |p|
       p.memory = 5 * 1024
