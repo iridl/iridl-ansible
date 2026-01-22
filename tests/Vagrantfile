@@ -10,7 +10,7 @@ exit unless REQUIRED_PLUGINS.all? do |plugin|
   )
 end
 
-$bootstrap= <<-EOF
+BOOTSTRAP = <<'EOF'
 #!/bin/bash
 set -e
 sed -i s/SELINUX=enforcing/SELINUX=permissive/ /etc/selinux/config 
@@ -19,9 +19,9 @@ dnf install -y git python3.12
 python3.12 -m venv /opt/datalib_venv3.12
 /opt/datalib_venv3.12/bin/pip install --upgrade pip
 /opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
-echo ", +" | sfdisk -f -N 2 /dev/vda
+echo ", +" | sfdisk -f -N %{partnum} /dev/vda
 partprobe
-resize2fs -F /dev/vda2
+resize2fs -F /dev/vda%{partnum}
 shutdown -r now
 EOF
 
@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
                     # a browser on the host.
                     :ip => "192.168.122.4"
 
-  config.vm.define "dlserver1", primary: true do |x|
+  config.vm.define "dlserver10", primary: true do |x|
     x.vm.box = "centos/stream10"
     x.vm.box_check_update = false
     x.vm.provider :libvirt do |p|
@@ -43,6 +43,17 @@ Vagrant.configure("2") do |config|
       p.machine_virtual_size = 20 # GB
     end
     x.vm.synced_folder "..", "/vagrant"
-    x.vm.provision "shell", :inline => $bootstrap
+    x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 2)
+  end
+
+  config.vm.define "dlserver9", autostart: false do |x|
+    x.vm.box = "centos/stream9"
+    x.vm.box_check_update = false
+    x.vm.provider :libvirt do |p|
+      p.memory = 5 * 1024
+      p.machine_virtual_size = 20 # GB
+    end
+    x.vm.synced_folder "..", "/vagrant"
+    x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 1)
   end
 end
