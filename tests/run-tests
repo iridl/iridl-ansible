@@ -50,7 +50,7 @@ cleanup() {
 trap cleanup EXIT
 
 destroy() {
-    vagrant destroy --force
+    vagrant destroy --force $box
 }
 
 ansible_test() {
@@ -103,11 +103,11 @@ _up() {
     # vagrant-reload plugin would be a cleaner way to handle this, but
     # the version of vagrant I'm getting from ubuntu 18.04 is too old
     # to support that.
-    vagrant up || return 1
+    vagrant up $box || return 1
     echo waiting for VM
     i=10
     while (( --i > 0 )); do
-        if vagrant ssh -- true; then
+        if vagrant ssh $box -- true; then
             break
         fi
         sleep 10
@@ -120,7 +120,7 @@ _up() {
     fi
     # Update shared folder. Docs say this happens automatically, but
     # it doesn't. Maybe my version of vagrant is too old.
-    vagrant rsync
+    vagrant rsync $box
 }
 
 _playbook() {
@@ -133,10 +133,16 @@ _playbook() {
 cd $(dirname $0) || fail
 
 where=host
+box=dlserver10
 while (( $# )); do
     case $1 in
         --guest)
             where=guest
+            shift
+            ;;
+        --box)
+            shift
+            box=$1
             shift
             ;;
         destroy)
@@ -149,7 +155,7 @@ while (( $# )); do
                 $1 || fail
             else
                 _up || fail
-                vagrant ssh -- exec bash -l -c "'/vagrant/tests/$(basename $0) --guest $1'" || fail
+                vagrant ssh $box -- exec bash -l -c "'/vagrant/tests/$(basename $0) --guest $1'" || fail
             fi
             shift
             ;;

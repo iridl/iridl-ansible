@@ -1,7 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-$bootstrap= <<-EOF
+REQUIRED_PLUGINS = %w(vagrant-libvirt)
+exit unless REQUIRED_PLUGINS.all? do |plugin|
+  Vagrant.has_plugin?(plugin) || (
+    puts "The #{plugin} plugin is required. Please install it with:"
+    puts "$ vagrant plugin install #{plugin}"
+    false
+  )
+end
+
+BOOTSTRAP = <<'EOF'
 #!/bin/bash
 set -e
 sed -i s/SELINUX=enforcing/SELINUX=permissive/ /etc/selinux/config 
@@ -10,28 +19,41 @@ dnf install -y git python3.12
 python3.12 -m venv /opt/datalib_venv3.12
 /opt/datalib_venv3.12/bin/pip install --upgrade pip
 /opt/datalib_venv3.12/bin/pip install ansible==11.3.0 requests==2.32.3
+echo ", +" | sfdisk -f -N %{partnum} /dev/vda
+partprobe
+resize2fs -F /dev/vda%{partnum}
+shutdown -r now
 EOF
 
 Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
-  resizedisk = <<-SCRIPT
-        echo ", +" | sfdisk -f -N 1 /dev/sda
-        partprobe
-        resize2fs -F /dev/sda1
-        shutdown -r now
-  SCRIPT
 
-  config.vm.define "dlserver1", primary: true do |x|
-    x.vm.box = "centos/stream9"
-    x.vm.disk :disk, size: '20GB', primary: true
+  config.vm.network :private_network,
+                    :name => "vagrant-private",
+                    # This ip address must be listed in the dl_hosts
+                    # field in the playbook, to allow testing from
+                    # a browser on the host.
+                    :ip => "192.168.122.4"
+
+  config.vm.define "dlserver10", primary: true do |x|
+    x.vm.box = "centos/stream10"
     x.vm.box_check_update = false
-    x.vm.network "forwarded_port", guest: 22, host: 2230 # must match ansible_port in inventory
-    x.vm.network "forwarded_port", guest: 80, host: 8090 # must match test_port in inventory
-    x.vm.provider :virtualbox do |vb|
-      vb.memory = 5 * 1024
+    x.vm.provider :libvirt do |p|
+      p.memory = 5 * 1024
+      p.machine_virtual_size = 20 # GB
     end
     x.vm.synced_folder "..", "/vagrant"
-    x.vm.provision "shell", :inline => $bootstrap
-    x.vm.provision "shell", :inline => resizedisk
+    x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 2)
+  end
+
+  config.vm.define "dlserver9", autostart: false do |x|
+    x.vm.box = "centos/stream9"
+    x.vm.box_check_update = false
+    x.vm.provider :libvirt do |p|
+      p.memory = 5 * 1024
+      p.machine_virtual_size = 20 # GB
+    end
+    x.vm.synced_folder "..", "/vagrant"
+    x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 1)
   end
 end
