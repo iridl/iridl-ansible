@@ -184,6 +184,34 @@
     dest: /var/lib/docker
   when: docker_dir != "/var/lib/docker"
 
+- name: containerd dir
+  file:
+    state: directory
+    path: "{{containerd_dir}}"
+    mode: "0700"
+
+- name: check for /var/lib/containerd
+  stat:
+    path: /var/lib/containerd
+  register: containerd_stat
+
+# On CentOS 10 (Docker 29), the bulk of the docker storage goes into
+# /var/lib/containerd, so we need to put that on a volume with
+# sufficient space.
+#
+# On Centos 9 (Docker 26), /var/lib/container has less than 1MB of
+# data in it, and containerd insists on permissions 0711 rather than
+# 0700. So we don't apply this change there.
+#
+# Also don't apply it on systems where docker is already running--the
+# daemon has to be shut down to do that safely.
+- name: containerd dir symlink
+  file:
+    state: link
+    src: "{{containerd_dir}}"
+    dest: /var/lib/containerd
+  when: containerd_dir != "/var/lib/containerd" and not containerd_stat.stat.exists and ansible_distribution_major_version != 9
+
 - name: install docker-ce repository
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo

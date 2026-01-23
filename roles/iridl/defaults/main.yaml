@@ -42,9 +42,11 @@ data_mountpoint: /data
 # datasets).
 dataset_parent_dir: "{{data_mountpoint}}/datalib"
 
-# Path of the directory where datasets are stored. This is typically a
-# volume with multiple TB of space, and ideally not the root volume.
+# Path of the directories where docker stores its container
+# data. These are usually under /var, but we move them to the data
+# volume to have more space.
 docker_dir: "{{data_mountpoint}}/docker"
+containerd_dir: "{{data_mountpoint}}/containerd"
 
 # Email recipients to which cron job output and other automated system
 # status messages will be sent. If mail_relay (see below) is non-empty
