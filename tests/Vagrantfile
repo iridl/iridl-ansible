@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
                     # a browser on the host.
                     :ip => "192.168.122.4"
 
-  config.vm.define "dlserver10", primary: true do |x|
+  config.vm.define "dlserver10", autostart: false do |x|
     x.vm.box = "centos/stream10"
     x.vm.box_check_update = false
     x.vm.provider :libvirt do |p|
@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
     x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 2)
   end
 
-  config.vm.define "dlserver9", autostart: false do |x|
+  config.vm.define "dlserver9", primary: true do |x|
     x.vm.box = "centos/stream9"
     x.vm.box_check_update = false
     x.vm.provider :libvirt do |p|

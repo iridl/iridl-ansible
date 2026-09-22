@@ -133,7 +133,7 @@ _playbook() {
 cd $(dirname $0) || fail
 
 where=host
-box=dlserver10
+box=dlserver9
 while (( $# )); do
     case $1 in
         --guest)
