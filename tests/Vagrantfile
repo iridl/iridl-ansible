@@ -40,7 +40,15 @@ Vagrant.configure("2") do |config|
     p.memory = 5 * 1024
     p.machine_virtual_size = 20 # GB
   end
-  config.vm.synced_folder "..", "/vagrant"
+
+  # By default (e.g. to use the testcountry config), sync the
+  # iridl-ansible project directory. To test a partner's config, use
+  # e.g.
+  #
+  #     VAGRANT_SYNC_DIR=~/dlconfig_emi vagrant up
+  #
+  sync_host_path = ENV['VAGRANT_SYNC_DIR'] || ".."
+  config.vm.synced_folder sync_host_path, "/vagrant"
 
   config.vm.define "dlserver10", autostart: false do |x|
     x.vm.box = "centos/stream10"
