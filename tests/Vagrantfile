@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
   config.vm.provider :libvirt do |p|
     p.memory = 5 * 1024
-    p.machine_virtual_size = 20 # GB
+    p.machine_virtual_size = 30 # GB
   end
 
   # By default (e.g. to use the testcountry config), sync the
