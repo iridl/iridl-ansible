@@ -61,11 +61,14 @@ a:focus-visible {
 
 body::before {
   content: "";
-  display: block;
+  display: none; /* shown, with background-image, when a logo is configured */
   height: 48px;
   padding: 0.75rem max(var(--gutter), (100% - var(--width)) / 2);
   border-bottom: 1px solid var(--border);
-  background: #fff url("emi-logo.png") no-repeat left center / auto 48px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: auto 48px;
   background-origin: content-box;
 }
 

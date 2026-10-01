@@ -14,6 +14,8 @@ python_maproom_src_dir: "{{build_dir}}/python_maproom"
 squid_config_dir: "{{dldir}}/squid"
 squid_shutdown_lifetime: 30
 
+fileserver_config_dir: "{{dldir}}/fileserver"
+
 fbfmaproom_uid: 48
 datag_uid: 4031
 ingrid_uid: 30001

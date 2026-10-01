@@ -44,6 +44,16 @@
       - "192.168.122.4"
       - localhost
 
+    # Optional apache file server for browsing a directory of reports. Files
+    # under fileserver_dir are listed at http://<server>{{fileserver_url}}/,
+    # with fileserver_title as the heading. Remove fileserver_dir to
+    # disable it.
+    fileserver_dir: "{{data_mountpoint}}/FBF/AA_Reports"
+    fileserver_url: "/reports"
+    fileserver_title: "AA Monitoring Reports"
+    # Logo shown at the top of the listings. Remove for no logo.
+    fileserver_logo: "{{playbook_dir}}/emi-logo.png"
+
   roles:
     # Installs the core IRIDL software. Don't remove this.
     - iridl.iridl.iridl
