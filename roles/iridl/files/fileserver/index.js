@@ -47,9 +47,13 @@
     parent.appendChild(group);
   }
 
-  function breadcrumb(title) {
+  // "Index of /reports/SouthEthiopia/OND" -> ["reports", ...]
+  function pathParts(title) {
     var path = title.textContent.replace(/^Index of /, "");
-    var parts = path.split("/").filter(Boolean).map(decodeURIComponent);
+    return path.split("/").filter(Boolean).map(decodeURIComponent);
+  }
+
+  function breadcrumb(title, parts) {
     if (!parts.length) return;
 
     // The top level is labeled from <meta name="fileserver-title">,
@@ -79,13 +83,20 @@
     document.title = names.slice().reverse().join(" \u2013 ");
   }
 
-  function listing(table) {
+  function listing(table, atTop) {
     var entries = 0;
     var links = table.querySelectorAll("td.indexcolname a");
     Array.prototype.forEach.call(links, function (a) {
       var href = a.getAttribute("href");
+      // The parent directory is the only absolute link. At the top
+      // level it leads out of the file server, so drop it.
       if (href.charAt(0) === "/") {
-        a.textContent = "Up one level";
+        if (atTop) {
+          var tr = a.parentNode.parentNode;
+          tr.parentNode.removeChild(tr);
+        } else {
+          a.textContent = "Up one level";
+        }
         return;
       }
       entries++;
@@ -120,6 +131,7 @@
 
   var title = document.getElementById("indextitle");
   var table = document.getElementById("indexlist");
-  if (title) breadcrumb(title);
-  if (table) listing(table);
+  var parts = title ? pathParts(title) : [];
+  if (title) breadcrumb(title, parts);
+  if (table) listing(table, parts.length === 1);
 })();

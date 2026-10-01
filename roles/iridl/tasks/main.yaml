@@ -132,6 +132,15 @@
     group: datag
     mode: u=rwx,g=rwxs,o=rx
 
+- name: file server dir
+  file:
+    path: "{{fileserver_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+    mode: u=rwx,g=rwxs,o=rx
+  when: fileserver_dir is defined
+
 - name: datalib dir
   file:
     path: "{{dldir}}"
@@ -293,6 +302,41 @@
     src: squid.conf
     dest: "{{squid_config_dir}}/squid.conf"
   notify: restart squid
+
+#
+# file server
+#
+- name: file server config directories
+  file:
+    path: "{{item}}"
+    state: directory
+  with_items:
+    - "{{fileserver_config_dir}}"
+    - "{{fileserver_config_dir}}/index"
+  when: fileserver_dir is defined
+
+- name: file server apache config
+  template:
+    src: fileserver.conf
+    dest: "{{fileserver_config_dir}}/fileserver.conf"
+  when: fileserver_dir is defined
+  notify: reload fileserver
+
+# Served as static files, so changes take effect without a reload.
+- name: file server directory listing style
+  copy:
+    src: "fileserver/{{item}}"
+    dest: "{{fileserver_config_dir}}/index/{{item}}"
+  with_items:
+    - index.css
+    - index.js
+  when: fileserver_dir is defined
+
+- name: file server logo
+  copy:
+    src: "{{fileserver_logo}}"
+    dest: "{{fileserver_config_dir}}/index/{{fileserver_logo | basename}}"
+  when: fileserver_dir is defined and fileserver_logo is defined
 
 #
 # git and access to git repos
@@ -498,6 +542,16 @@
     msg: "{{docker_compose_result}}"
     verbosity: 2
 
+- name: Update docker-compose state for file server
+  community.docker.docker_compose_v2:
+    project_src: "{{compose_project_dir}}"
+    pull: missing
+    remove_orphans: yes
+    services:
+      - fileserver
+  when: fileserver_dir is defined
+  notify: restart squid
+
 - name: Update docker-compose state for locally built services
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
@@ -507,6 +561,7 @@
       - pymaproom
   register: docker_compose_result
   when: python_maproom_repo is defined
+  notify: restart squid
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
@@ -622,6 +677,21 @@
   changed_when: no
   check_mode: no
   when: python_maproom_repo is defined
+
+- name: verify that the file server is running
+  uri:
+    url: http://{{test_host}}:{{test_port}}{{fileserver_url}}/
+    headers:
+      Cache-Control: no-cache # force squid to talk to the backend
+  retries: 5
+  delay: 1
+  register: result
+  until: result is success
+  delegate_to: localhost
+  become: false
+  changed_when: no
+  check_mode: no
+  when: fileserver_dir is defined
 
 - name: verify that chronyd has synchronized with a time server
   shell: chronyc sources | grep '^\^\*'

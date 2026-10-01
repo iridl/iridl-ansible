@@ -23,6 +23,9 @@
     services:
       - squid
 
+- name: reload fileserver
+  command: docker exec {{compose_project_name}}_fileserver_1 httpd -k graceful
+
 - name: restart ingrid
   community.docker.docker_compose_v2:
     state: restarted
