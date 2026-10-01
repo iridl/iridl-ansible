@@ -65,5 +65,5 @@ if [ ! -f "../secrets.yaml" ]; then
     exit 1
 fi
 
-echo "ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${BUILD} playbook.yaml $*"
-ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${BUILD} playbook.yaml $*
+echo "ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${BUILD} playbook.yaml" "$@"
+ansible-playbook ${BECOME} -i inventory.cfg -e @../secrets.yaml ${BUILD} playbook.yaml "$@"

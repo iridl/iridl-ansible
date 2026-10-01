@@ -46,6 +46,19 @@ services:
     restart: always
     volumes:
       - "{{data_dir}}:{{data_dir}}:rslave,ro"
+
+{% if fbfmaproom_present %}
+  fbfmaproom:
+    image: fbfmaproom:latest
+    pull_policy: never
+    container_name: "{{ compose_project_name }}_fbfmaproom_1"
+    expose:
+      - 8000
+    restart: always
+    user: "{{fbfmaproom_uid}}:{{fbfmaproom_uid}}"
+    volumes:
+      - "{{data_dir}}/fbf:/data:rslave,ro"
+{% endif %}
 {% endif %}
 
   postgres:

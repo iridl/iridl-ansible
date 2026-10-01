@@ -35,25 +35,28 @@ Vagrant.configure("2") do |config|
                     # a browser on the host.
                     :ip => "192.168.122.4"
 
-  config.vm.define "dlserver10", primary: true do |x|
+  config.vm.box_check_update = false
+  config.vm.provider :libvirt do |p|
+    p.memory = 5 * 1024
+    p.machine_virtual_size = 30 # GB
+  end
+
+  # By default (e.g. to use the testcountry config), sync the
+  # iridl-ansible project directory. To test a partner's config, use
+  # e.g.
+  #
+  #     VAGRANT_SYNC_DIR=~/dlconfig_emi vagrant up
+  #
+  sync_host_path = ENV['VAGRANT_SYNC_DIR'] || ".."
+  config.vm.synced_folder sync_host_path, "/vagrant"
+
+  config.vm.define "dlserver10", autostart: false do |x|
     x.vm.box = "centos/stream10"
-    x.vm.box_check_update = false
-    x.vm.provider :libvirt do |p|
-      p.memory = 5 * 1024
-      p.machine_virtual_size = 20 # GB
-    end
-    x.vm.synced_folder "..", "/vagrant"
     x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 2)
   end
 
-  config.vm.define "dlserver9", autostart: false do |x|
+  config.vm.define "dlserver9", primary: true do |x|
     x.vm.box = "centos/stream9"
-    x.vm.box_check_update = false
-    x.vm.provider :libvirt do |p|
-      p.memory = 5 * 1024
-      p.machine_virtual_size = 20 # GB
-    end
-    x.vm.synced_folder "..", "/vagrant"
     x.vm.provision "shell", :inline => format(BOOTSTRAP, partnum: 1)
   end
 end
