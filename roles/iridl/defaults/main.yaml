@@ -78,6 +78,6 @@ fileserver_present: false
 
 fbf_dir: "{{data_mountpoint}}/FBF"
 
-fileserver_dir: "{{fbf_dir}}/FBF/AA_Reports"
+fileserver_dir: "{{fbf_dir}}/AA_Reports"
 fileserver_url: "/reports"
 fileserver_title: "Reports"

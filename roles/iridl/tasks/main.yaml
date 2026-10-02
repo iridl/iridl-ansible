@@ -134,7 +134,7 @@
 
 - name: fbf directory
   file:
-    path: "{fbf_dir}}"
+    path: "{{fbf_dir}}"
     state: directory
     owner: datag
     group: datag
@@ -149,6 +149,15 @@
     group: datag
     mode: u=rwx,g=rwxs,o=rx
   when: fileserver_present
+
+- name: fbfmaproom dir
+  file:
+    path: "{{fbf_dir}}/fbfmaproom"
+    state: directory
+    owner: datag
+    group: datag
+    mode: u=rwx,g=rwxs,o=rx
+  when: fbfmaproom_present
 
 - name: datalib dir
   file:
@@ -315,6 +324,13 @@
 #
 # file server
 #
+- name: fileserver dockerfile
+  template:
+    src: apache_Dockerfile.j2
+    dest: "{{dldir}}/etc/Dockerfile.apache"
+  when: fileserver_present
+  register: fileserver_dockerfile
+
 - name: file server config directories
   file:
     path: "{{item}}"
@@ -326,7 +342,7 @@
 
 - name: file server apache config
   template:
-    src: fileserver.conf
+    src: fileserver.j2
     dest: "{{fileserver_config_dir}}/fileserver.conf"
   when: fileserver_present
   notify: reload fileserver
@@ -554,6 +570,7 @@
 - name: Update docker-compose state for file server
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
+    build: "{{ 'always' if fileserver_dockerfile is changed else 'policy' }}"
     pull: missing
     remove_orphans: yes
     services:
