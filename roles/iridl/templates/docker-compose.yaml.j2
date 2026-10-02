@@ -36,9 +36,11 @@ services:
     volumes:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
 
-{% if fileserver_preset %}
+{% if fileserver_present %}
   fileserver:
-    image: httpd:{{httpd_version}}
+    build:
+      context: "{{dldir}}/etc"
+      dockerfile: Dockerfile.apache
     container_name: "{{ compose_project_name }}_fileserver_1"
     expose:
       - 80
