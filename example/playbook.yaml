@@ -51,8 +51,12 @@
     fileserver_dir: "{{data_mountpoint}}/FBF/AA_Reports"
     fileserver_url: "/reports"
     fileserver_title: "AA Monitoring Reports"
-    # Logo shown at the top of the listings. Remove for no logo.
-    fileserver_logo: "{{playbook_dir}}/emi-logo.png"
+    # Logo shown at the top of the listings. Remove for no logo. This will shrink the logo to a 48px height.
+    # for best results, make your logo 96px height to eliminate artifacts of scaling down and keep it sharp
+    # at higher resolutions screens. The logo will rest on a white background, so a transparent background, or
+    # logo with a white background works best.
+    # Include the full path to the logo file here. Valid filetypes are: png, jpeg, GIF, SVG.
+    # fileserver_logo: "logo.png"
 
   roles:
     # Installs the core IRIDL software. Don't remove this.

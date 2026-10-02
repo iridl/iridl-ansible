@@ -56,8 +56,7 @@ a:focus-visible {
   border-radius: 2px;
 }
 
-/* White site bar with the EMI logo, as at the top of the EMI site.
- * Drawn with CSS so it doesn't depend on index.js. */
+/* White site bar with a logo */
 
 body::before {
   content: "";
