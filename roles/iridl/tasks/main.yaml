@@ -576,7 +576,7 @@
     services:
       - fileserver
   when: fileserver_present
-  notify: restart squid
+  notify: reconfigure squid
 
 - name: Update docker-compose state for pymaproom
   community.docker.docker_compose_v2:
@@ -587,7 +587,7 @@
       - pymaproom
   register: docker_compose_result
   when: python_maproom_repo is defined
-  notify: restart squid
+  notify: reconfigure squid
 
 - debug:
     msg: "{{docker_compose_result.actions}}"
