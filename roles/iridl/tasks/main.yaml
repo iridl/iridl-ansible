@@ -213,8 +213,8 @@
   when: containerd_dir != "/var/lib/containerd" and not containerd_stat.stat.exists and ansible_distribution_major_version != 9
 
 - name: install docker-ce repository
-  get_url:
-    url: https://download.docker.com/linux/centos/docker-ce.repo
+  copy:
+    src: docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
 
 - name: uninstall older versions of docker from original installs
