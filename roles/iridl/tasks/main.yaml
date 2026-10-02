@@ -148,7 +148,7 @@
     owner: datag
     group: datag
     mode: u=rwx,g=rwxs,o=rx
-  when: fileserver_dir is defined
+  when: fileserver_present
 
 - name: datalib dir
   file:
@@ -322,13 +322,13 @@
   with_items:
     - "{{fileserver_config_dir}}"
     - "{{fileserver_config_dir}}/index"
-  when: fileserver_dir is defined
+  when: fileserver_present
 
 - name: file server apache config
   template:
     src: fileserver.conf
     dest: "{{fileserver_config_dir}}/fileserver.conf"
-  when: fileserver_dir is defined
+  when: fileserver_present
   notify: reload fileserver
 
 # Served as static files, so changes take effect without a reload.
@@ -339,13 +339,13 @@
   with_items:
     - index.css
     - index.js
-  when: fileserver_dir is defined
+  when: fileserver_present
 
 - name: file server logo
   copy:
     src: "{{fileserver_logo}}"
     dest: "{{fileserver_config_dir}}/index/{{fileserver_logo | basename}}"
-  when: fileserver_dir is defined and fileserver_logo is defined
+  when: fileserver_present and fileserver_logo is defined
 
 #
 # git and access to git repos
@@ -558,7 +558,7 @@
     remove_orphans: yes
     services:
       - fileserver
-  when: fileserver_dir is defined
+  when: fileserver_present
   notify: restart squid
 
 - name: Update docker-compose state for pymaproom
@@ -714,7 +714,7 @@
   become: false
   changed_when: no
   check_mode: no
-  when: fileserver_dir is defined
+  when: fileserver_present
 
 - name: verify that fbfmaproom is running
   uri:
