@@ -78,7 +78,7 @@ fi
     init_git {{dlentries_repo.url}} {{dlentries_dir}} {{dlentries_repo.version}} {{git_ssh_prefix}}{{dlentries_repo.name}}
 {% endif %}
 
-### python maproom
+### python maproom, possibly including fbfmaproom
 
 # only if we actually have a python maproom for this deployment
 {% if python_maproom_repo is defined %}
@@ -99,6 +99,12 @@ for f in pycpt-forecasts/*/pycpt-version; do
     fi
 done
 shopt -u nullglob
+
+{% if fbfmaproom_present %}
+cd design-dashboard || fail
+docker build -t fbfmaproom:latest . || fail $? "fbfmaproom build failed"
+{% endif %}
+
 {% endif %}
 
 ### maproom

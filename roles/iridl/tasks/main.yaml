@@ -552,7 +552,7 @@
   when: fileserver_dir is defined
   notify: restart squid
 
-- name: Update docker-compose state for locally built services
+- name: Update docker-compose state for pymaproom
   community.docker.docker_compose_v2:
     project_src: "{{compose_project_dir}}"
     pull: never
@@ -566,6 +566,20 @@
 - debug:
     msg: "{{docker_compose_result.actions}}"
   when: python_maproom_repo is defined
+
+- name: Update docker-compose state for fbfmaproom
+  community.docker.docker_compose_v2:
+    project_src: "{{compose_project_dir}}"
+    pull: never
+    remove_orphans: yes
+    services:
+      - fbfmaproom
+  register: docker_compose_result
+  when: fbfmaproom_present
+
+- debug:
+    msg: "{{docker_compose_result.actions}}"
+  when: fbfmaproom_present
 
 #
 # Tools for managing PyCPT forecasts
@@ -692,6 +706,22 @@
   changed_when: no
   check_mode: no
   when: fileserver_dir is defined
+
+- name: verify that fbfmaproom is running
+  uri:
+    url: http://{{test_host}}:{{test_port}}/fbfmaproom-admin/stats
+    headers:
+      Cache-Control: no-cache
+    return_content: yes
+  retries: 5
+  delay: 1
+  register: result
+  until: result.status == 200 and "process_stats" in result.content
+  delegate_to: localhost
+  become: false
+  changed_when: no
+  check_mode: no
+  when: fbfmaproom_present
 
 - name: verify that chronyd has synchronized with a time server
   shell: chronyc sources | grep '^\^\*'

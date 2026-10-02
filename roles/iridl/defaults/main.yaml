@@ -72,3 +72,5 @@ dlsquid_version: de6ed54
 httpd_version: "2.4.68"
 
 docker_ce_version: "docker-ce-3:28.3.2-1.el{{ansible_distribution_major_version}}"
+
+fbfmaproom_present: false
