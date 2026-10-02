@@ -132,6 +132,15 @@
     group: datag
     mode: u=rwx,g=rwxs,o=rx
 
+- name: fbf directory
+  file:
+    path: "{fbf_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+    mode: u=rwx,g=rwxs,o=rx
+  when: fileserver_present or fbfmaproom_present
+
 - name: file server dir
   file:
     path: "{{fileserver_dir}}"

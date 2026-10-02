@@ -36,7 +36,7 @@ services:
     volumes:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
 
-{% if fileserver_dir is defined %}
+{% if fileserver_preset %}
   fileserver:
     image: httpd:{{httpd_version}}
     container_name: "{{ compose_project_name }}_fileserver_1"
@@ -75,7 +75,7 @@ services:
     restart: always
     user: "{{fbfmaproom_uid}}:{{fbfmaproom_uid}}"
     volumes:
-      - "{{data_dir}}/fbf:/data:rslave,ro"
+      - "{{fbf_dir}}/fbfmaproom:/data:rslave,ro"
 {% endif %}
 {% endif %}
 

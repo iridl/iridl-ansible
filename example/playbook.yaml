@@ -44,13 +44,15 @@
       - "192.168.122.4"
       - localhost
 
-    # Optional apache file server for browsing a directory of reports. Files
-    # under fileserver_dir are listed at http://<server>{{fileserver_url}}/,
-    # with fileserver_title as the heading. Remove fileserver_dir to
-    # disable it.
-    fileserver_dir: "{{data_mountpoint}}/FBF/AA_Reports"
-    fileserver_url: "/reports"
-    fileserver_title: "AA Monitoring Reports"
+    # Optional apache file server for hosting files; specifically FBF AA Reports, but it
+    # can be used for anything. Files under fileserver_dir are listed at
+    # http://<server>{{fileserver_url}}/, with fileserver_title as the heading.
+    # The following are the default values
+    # fileserver_present: false
+    # fileserver_dir: "{{data_mountpoint}}/FBF/AA_Reports"
+    # fileserver_url: "/reports"
+    # fileserver_title: "AA Monitoring Reports"
+
     # Logo shown at the top of the listings. Remove for no logo. This will shrink the logo to a 48px height.
     # for best results, make your logo 96px height to eliminate artifacts of scaling down and keep it sharp
     # at higher resolutions screens. The logo will rest on a white background, so a transparent background, or
