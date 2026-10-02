@@ -1,0 +1,26 @@
+# Fancy Directory listing style for the file server at {{fileserver_url}}.
+
+Alias "{{fileserver_url}}/.index" "/usr/local/apache2/fileserver/index"
+<Directory "/usr/local/apache2/fileserver/index">
+    Require all granted
+</Directory>
+
+{# index.css hides the logo bar; this turns it on with the logo. #}
+{% set logo_style = '' %}
+{% if fileserver_logo is defined %}
+{%   set logo_url = fileserver_url ~ '/.index/' ~ (fileserver_logo | basename | urlencode) %}
+{%   set logo_style = '<style>body::before{display:block;background-image:url(\\"' ~ logo_url ~ '\\")}</style>' %}
+{% endif %}
+<Directory "/usr/local/apache2/htdocs{{fileserver_url}}">
+    IndexOptions FancyIndexing HTMLTable FoldersFirst IgnoreCase VersionSort NameWidth=* SuppressDescription SuppressIcon Charset=UTF-8 AddAltClass
+    IndexIgnore .??* *~ *#
+    IndexStyleSheet "{{fileserver_url}}/.index/index.css"
+    # Open Sans matches www.ethiomet.gov.et; index.css falls back to
+    # system fonts if Google Fonts can't be reached.
+    IndexHeadInsert "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"fileserver-title\" content=\"{{fileserver_title | e}}\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap\"><script src=\"{{fileserver_url}}/.index/index.js\" defer></script>{{logo_style}}"
+    # With AddAltClass these become row classes (odd-dir, even-html,
+    # ...) that index.css uses to mark folders and reports.
+    AddAlt "dir" ^^DIRECTORY^^
+    AddAlt "html" .html .htm
+    AddAlt "pdf" .pdf
+</Directory>

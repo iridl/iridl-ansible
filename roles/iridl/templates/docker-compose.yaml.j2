@@ -36,6 +36,26 @@ services:
     volumes:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
 
+{% if fileserver_present %}
+  fileserver:
+    build:
+      context: "{{dldir}}/etc"
+      dockerfile: Dockerfile.apache
+    container_name: "{{ compose_project_name }}_fileserver_1"
+    expose:
+      - 80
+    restart: always
+    volumes:
+      # The image's default config serves htdocs with directory
+      # listings enabled. Mounting under htdocs{{fileserver_url}} makes the path
+      # match the fileserver_url path that squid forwards.
+      - "{{fileserver_dir}}:/usr/local/apache2/htdocs{{fileserver_url}}:rslave,ro"
+      - "{{fileserver_config_dir}}:/usr/local/apache2/fileserver:rslave,ro"
+    # Add the directory listing config to the image's default httpd.conf.
+    command: ["httpd-foreground", "-c", "Include fileserver/fileserver.conf"]
+
+{% endif %}
+
 {% if python_maproom_repo is defined %}
   pymaproom:
     image: "{{python_maproom_repo.name}}:{{python_maproom_repo.version}}"
@@ -57,7 +77,7 @@ services:
     restart: always
     user: "{{fbfmaproom_uid}}:{{fbfmaproom_uid}}"
     volumes:
-      - "{{data_dir}}/fbf:/data:rslave,ro"
+      - "{{fbf_dir}}/fbfmaproom:/data:rslave,ro"
 {% endif %}
 {% endif %}
 

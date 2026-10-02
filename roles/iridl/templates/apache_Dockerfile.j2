@@ -1,0 +1,7 @@
+FROM httpd:{{httpd_version}}
+
+# Grant www-data permissions to runtime and log directories
+RUN chown -R www-data:www-data /usr/local/apache2
+
+# Run container as the unprivileged www-data user
+USER www-data

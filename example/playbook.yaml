@@ -44,6 +44,9 @@
       - "192.168.122.4"
       - localhost
 
+    # installs apache fileserver, optional. On for testing.
+    fileserver_present: true
+
   roles:
     # Installs the core IRIDL software. Don't remove this.
     - iridl.iridl.iridl
