@@ -132,6 +132,15 @@
     group: datag
     mode: u=rwx,g=rwxs,o=rx
 
+- name: fbf directory
+  file:
+    path: "{fbf_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+    mode: u=rwx,g=rwxs,o=rx
+  when: fileserver_present or fbfmaproom_present
+
 - name: file server dir
   file:
     path: "{{fileserver_dir}}"
@@ -712,7 +721,6 @@
   check_mode: no
   when: python_maproom_repo is defined
 
-<<<<<<< HEAD
 - name: verify that fbfmaproom is running
   uri:
     url: http://{{test_host}}:{{test_port}}/fbfmaproom-admin/stats
@@ -729,8 +737,6 @@
   check_mode: no
   when: fbfmaproom_present
 
-||||||| parent of 8a3eae7 (Added docker container for an apache server to serve files/reports. Specifying these in the playbook will activate the deployment of the webserver and create the reports directory.  The reports directory is fancified in order to make it look pretty.)
-=======
 - name: verify that the file server is running
   uri:
     url: http://{{test_host}}:{{test_port}}{{fileserver_url}}/
@@ -746,7 +752,6 @@
   check_mode: no
   when: fileserver_dir is defined
 
->>>>>>> 8a3eae7 (Added docker container for an apache server to serve files/reports. Specifying these in the playbook will activate the deployment of the webserver and create the reports directory.  The reports directory is fancified in order to make it look pretty.)
 - name: verify that chronyd has synchronized with a time server
   shell: chronyc sources | grep '^\^\*'
   register: chronyc_result

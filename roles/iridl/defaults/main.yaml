@@ -74,3 +74,10 @@ httpd_version: "2.4.68"
 docker_ce_version: "docker-ce-3:28.3.2-1.el{{ansible_distribution_major_version}}"
 
 fbfmaproom_present: false
+fileserver_present: false
+
+fbf_dir: "{{data_mountpoint}}/FBF"
+
+fileserver_dir: "{{fbf_dir}}/FBF/AA_Reports"
+fileserver_url: "/reports"
+fileserver_title: "Reports"

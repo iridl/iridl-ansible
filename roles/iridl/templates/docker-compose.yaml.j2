@@ -36,7 +36,7 @@ services:
     volumes:
       - "{{maproom_install_dir}}:/var/www/html:rslave,ro"
 
-{% if fileserver_dir is defined %}
+{% if fileserver_preset %}
   fileserver:
     image: httpd:{{httpd_version}}
     container_name: "{{ compose_project_name }}_fileserver_1"
