@@ -57,7 +57,7 @@ services:
     restart: always
     user: "{{fbfmaproom_uid}}:{{fbfmaproom_uid}}"
     volumes:
-      - "{{data_dir}}/fbf:/data:rslave,ro"
+      - "{{data_dir}}:{{data_dir}}:rslave,ro"
 {% endif %}
 {% endif %}
 
