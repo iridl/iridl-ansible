@@ -142,6 +142,15 @@
     path: "{{dldir}}/etc"
     state: directory
 
+- name: fbf data dir
+  file:
+    path: "{{fbf_host_data_dir}}"
+    state: directory
+    owner: datag
+    group: datag
+    mode: '2775'
+  when: fbfmaproom_present
+
 - name: DL user dirs parent
   file:
     path: "{{dl_homes_dir}}"
@@ -385,6 +394,7 @@
     content: |
       Defaults secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
       %datag ALL=(root) NOPASSWD: {{update_script}}
+      %datag ALL=(root) NOPASSWD: /usr/local/libexec/fbf-aux
     dest: /etc/sudoers.d/datag_update
     mode: '0400'
 
@@ -453,7 +463,6 @@
     user: root
     minute: "*/15"
     job: "docker exec {{compose_project_name}}_ingrid_1 /opt/ingrid/bin/scanproc.pl /dev/null 2>&1"
-
 
 
 #
@@ -551,6 +560,26 @@
     - /usr/local/bin/ssh-git
     - "{{build_dir}}/maproom_src"
     - "{{build_dir}}/python_maproom_src"
+
+
+#
+# Tools for managing fbfmaproom data
+#
+- name: fbf script wrapper for data maintainers
+  copy:
+    content: |
+      #!/bin/bash
+      sudo /usr/local/libexec/fbf-aux "$@"
+    dest: /usr/local/bin/fbf
+    mode: '0755'
+  when: fbfmaproom_present
+
+- name: auxiliary script for fbf script wrapper
+  template:
+    src: fbf-aux.j2
+    dest: /usr/local/libexec/fbf-aux
+    mode: '0755'
+  when: fbfmaproom_present
 
 
 # TODO need smarter criteria for pruning old images; this prunes the

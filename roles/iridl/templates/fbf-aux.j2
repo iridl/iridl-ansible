@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Run a command as the invoking user and group datag in an fbfmaproom
+# container, with the data directory mounted read-write (unlike the
+# service, which mounts it read-only).
+
+if [[ $(id -u) != 0 ]]; then
+    echo "Don\'t run $0 directly. Run /usr/local/bin/fbf instead."
+    exit 1
+fi
+
+if [ -t 0 ] && [ -t 1 ]; then
+    tty_flag="-t"
+else
+    tty_flag=""
+fi
+
+cd /usr/local/datalib
+
+docker compose run \
+    --rm \
+    --interactive \
+    --quiet \
+    --user $SUDO_UID:$(getent group datag | cut -d: -f3) \
+    --volume {{fbf_host_data_dir}}:/data:rslave,rw \
+    $tty_flag \
+    fbfmaproom \
+    "$@"
