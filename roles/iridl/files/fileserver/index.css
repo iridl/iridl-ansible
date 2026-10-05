@@ -1,0 +1,314 @@
+/* Fancy Directory listing style for the report file server.
+ *
+ * Styles the markup that Apache mod_autoindex produces with
+ * "IndexOptions FancyIndexing HTMLTable AddAltClass": h1#indextitle,
+ * table#indexlist, rows classed even-dir / odd-html etc., and cells
+ * classed indexcolname / indexcollastmod / indexcolsize. index.js
+ * optionally upgrades the title to a breadcrumb.
+ *
+ * Colors, type, and corner radius follow the Ethiopian Meteorological
+ * Institute site (www.ethiomet.gov.et).
+ */
+
+:root {
+  --primary: #0c447c;
+  --primary-dark: #0a3764;
+  --primary-light: #e6f1fb;
+  --primary-lightest: rgba(12, 68, 124, 0.05);
+  --accent: #3e8ed0;
+  --page: #f4f6f9;
+  --card: #fff;
+  --text: #363636;
+  --muted: #5d6572;
+  --border: #e3e7ed;
+  --radius: 12px;
+  --width: 60rem;
+  --gutter: 1.5rem;
+  --face: "Open Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+}
+
+html {
+  background: var(--page);
+  color: var(--text);
+  font: 100%/1.5 var(--face);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding-bottom: 4rem;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* White site bar with a logo */
+
+body::before {
+  content: "";
+  display: none; /* shown, with background-image, when a logo is configured */
+  height: 48px;
+  padding: 0.75rem max(var(--gutter), (100% - var(--width)) / 2);
+  border-bottom: 1px solid var(--border);
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: auto 48px;
+  background-origin: content-box;
+}
+
+/* Title banner: "Index of /reports/..." or, with index.js, a
+ * breadcrumb. Full width, with the text aligned to the listing. */
+
+#indextitle {
+  margin: 0;
+  padding: 2.5rem max(var(--gutter), (100% - var(--width)) / 2);
+  background: var(--primary);
+  color: #fff;
+  font-size: clamp(1.625rem, 1.2rem + 1.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#indextitle a {
+  color: inherit;
+  opacity: 0.85;
+}
+
+#indextitle a:hover {
+  opacity: 1;
+  text-decoration-thickness: 2px;
+}
+
+#indextitle a:focus-visible {
+  outline-color: #fff;
+}
+
+#indextitle .sep {
+  margin: 0 0.35em;
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+.seasongroup {
+  white-space: nowrap;
+}
+
+/* On wider screens, wrap the breadcrumb only between segments. */
+@media (min-width: 36rem) {
+  #indextitle > a,
+  #indextitle > [aria-current] {
+    white-space: nowrap;
+  }
+}
+
+/* Season months, styled like the site's outlined pill buttons. */
+.season {
+  display: inline-block;
+  margin-left: 0.6em;
+  padding: 0 0.7em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: 0.15em;
+  white-space: nowrap;
+}
+
+#indextitle .season {
+  font-size: 0.4em;
+  vertical-align: 0.5em;
+}
+
+/* Listing card */
+
+#indexlist {
+  box-sizing: border-box;
+  width: calc(100% - 2 * var(--gutter));
+  max-width: var(--width);
+  margin: 2rem auto 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-spacing: 0;
+  background: var(--card);
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.indexbreakrow {
+  display: none;
+}
+
+#indexlist th,
+#indexlist td {
+  padding: 0.8rem 1.25rem;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.indexhead th {
+  background: var(--primary-dark);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.indexhead th a {
+  color: inherit;
+}
+
+#indexlist td {
+  border-top: 1px solid var(--border);
+}
+
+.indexhead + .indexbreakrow + tr td {
+  border-top: 0;
+}
+
+#indexlist tr[class*="-"]:hover td {
+  background: var(--primary-lightest);
+}
+
+.indexcollastmod,
+.indexcolsize {
+  width: 1%;
+  white-space: nowrap;
+}
+
+td.indexcollastmod,
+td.indexcolsize {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+#indexlist .indexcolsize {
+  text-align: right;
+}
+
+td.indexcolname {
+  overflow-wrap: anywhere;
+}
+
+td.indexcolname a {
+  display: inline-block;
+  padding-left: 1.6rem;
+  position: relative;
+  font-weight: 600;
+}
+
+/* Type marker before each name: a folder for directories, a page
+ * for reports, an upward chevron for the parent directory. */
+
+td.indexcolname a::before {
+  content: "";
+  position: absolute;
+  left: 0.1rem;
+  top: 0.2em;
+  width: 0.75rem;
+  height: 0.95rem;
+  background: var(--accent);
+  clip-path: polygon(0 0, 65% 0, 100% 28%, 100% 100%, 0 100%);
+}
+
+tr[class$="-dir"] td.indexcolname a::before {
+  left: 0;
+  width: 1rem;
+  height: 0.8rem;
+  top: 0.3em;
+  background: var(--primary);
+  clip-path: polygon(0 0, 40% 0, 52% 18%, 100% 18%, 100% 100%, 0 100%);
+}
+
+tr td.indexcolname a[href^="/"] {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+tr[class] td.indexcolname a[href^="/"]::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  top: 0.6em;
+  left: 0.25rem;
+  border: solid currentColor;
+  border-width: 2px 0 0 2px;
+  background: none;
+  clip-path: none;
+  transform: rotate(45deg);
+}
+
+td.indexcolname .season {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Shown by index.js when a folder has nothing in it. */
+.indexempty td {
+  padding: 2.5rem 1.25rem !important;
+  color: var(--muted);
+  text-align: center !important;
+}
+
+@media (max-width: 36rem) {
+  :root {
+    --gutter: 1rem;
+  }
+
+  body::before {
+    height: 36px;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    background-size: auto 36px;
+  }
+
+  #indextitle {
+    padding-top: 1.75rem;
+    padding-bottom: 1.75rem;
+  }
+
+  #indexlist {
+    margin-top: 1.25rem;
+  }
+
+  #indexlist th,
+  #indexlist td {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .indexcollastmod {
+    display: none;
+  }
+}
+
+@media print {
+  html {
+    background: none;
+  }
+
+  #indextitle {
+    padding: 0 0 1rem;
+    background: none;
+    color: var(--primary);
+  }
+
+  #indexlist {
+    width: 100%;
+    border-radius: 0;
+  }
+}

@@ -69,7 +69,13 @@ ingriddb_version: d13b453
 maproom_base_version: 3450dbf
 maproom_dev_version: d22d3bd
 dlsquid_version: de6ed54
+httpd_version: "2.4.68"
 
 docker_ce_version: "docker-ce-3:28.3.2-1.el{{ansible_distribution_major_version}}"
 
 fbfmaproom_present: false
+fileserver_present: false
+
+fileserver_dir: "{{data_mountpoint}}/www/AA_Reports"
+fileserver_url: "/reports"
+fileserver_title: "Reports"
