@@ -373,8 +373,8 @@
     key: "{{item.key}}"
   # These are public (host) keys, not secrets, so no need to encrypt them.
   with_items:
-    - host: bitbucket.org
-      key: bitbucket.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIazEu89wgQZ4bqs3d63QSMzYVa0MuJ2e2gKTKqu+UUO
+    - host: ssh.bitbucket.org
+      key: ssh.bitbucket.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIazEu89wgQZ4bqs3d63QSMzYVa0MuJ2e2gKTKqu+UUO
 
     - host: github.com
       key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
